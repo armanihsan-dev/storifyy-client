@@ -25,7 +25,7 @@ const FileUpload = ({ getDirectories }) => {
         <span>Uploading {file.name}...</span>
       </div>,
       {
-        style: { background: '#2563eb', color: 'white' },
+        style: { background: 'white', color: 'black' },
         position: 'top-center',
       }
     );
@@ -54,7 +54,7 @@ const FileUpload = ({ getDirectories }) => {
         </div>,
         {
           id: uploadToast,
-          style: { background: '#2563eb', color: 'white' },
+          style: { background: 'white', color: 'black' },
           position: 'top-center',
         }
       );

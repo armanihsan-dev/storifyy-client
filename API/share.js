@@ -1,102 +1,86 @@
 import toast from "react-hot-toast";
-import { BASE_URL } from "../utility/Server";
 import axiosAPI from "./axsios";
 
 export async function getSharedFiles() {
-    const res = await fetch("http://localhost:3000/share/shared-with-me", {
-        method: "GET",
-        credentials: "include"
-    });
-    const data = await res.json();
-    if (data.error === 'Not logged!') {
-        return window.location.href = '/login'
+    try {
+        const { data } = await axiosAPI.get("/share/shared-with-me");
+
+        if (data.error === "Not logged!") {
+            return (window.location.href = "/login");
+        }
+
+        return data.files;
+    } catch (err) {
+        console.log(err);
+        return [];
     }
-    return data.files;
 }
 
 export async function deleteFile(id) {
-    const res = await fetch(`${BASE_URL}/share/delete/${id}`, {
-        method: "DELETE",
-        credentials: "include",
-    });
-
-    const data = await res.json();
-    return { ok: res.ok, ...data };
+    try {
+        const { data } = await axiosAPI.delete(`/share/delete/${id}`);
+        return { ok: true, ...data };
+    } catch (err) {
+        return { ok: false, error: "Failed to delete file" };
+    }
 }
 
 export async function renameSharedFile(id, newName) {
     try {
-        const response = await fetch(`${BASE_URL}/share/rename/${id}`, {
-            method: "PATCH",
-            credentials: "include",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ newName }),
+        const { data } = await axiosAPI.patch(`/share/rename/${id}`, {
+            newName,
         });
 
-        const data = await response.json();
-
-        return { ok: response.ok, ...data };
+        return { ok: true, ...data };
     } catch (err) {
         return { ok: false, error: "Network error" };
     }
 }
 
-
 export async function shareDirectoryByEmail(email, directoryId, role) {
     try {
-        const response = await fetch(`${BASE_URL}/share/directory/${email}`, {
-            method: "POST",
-            credentials: 'include',
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ directoryId, role }),
-        })
-        if (!response.ok) {
-            toast.error("Failed to shared directory")
-            return
-        }
-        const data = await response.json();
-        toast.success(data.message || 'Directory shared successfully')
-        return data
+        const { data } = await axiosAPI.post(`/share/directory/${email}`, {
+            directoryId,
+            role,
+        });
 
+        toast.success(data.message || "Directory shared successfully");
+        return data;
     } catch (err) {
+        toast.error("Failed to share directory");
         console.error("Error sharing directory:", err);
+        return null;
     }
 }
-
 export const getSharedDirectories = async () => {
     const res = await axiosAPI.get("/share/getallsharedDirectories");
     return res.data;
 };
-export async function getSharedDirectory(id) {
-    const res = await fetch(`${BASE_URL}/share/directories/${id}`, {
-        method: "GET",
-        credentials: "include",
-    });
 
-    const data = await res.json();
-    return data;
+export async function getSharedDirectory(id) {
+    try {
+        const { data } = await axiosAPI.get(`/share/directories/${id}`);
+        return data;
+    } catch (err) {
+        console.log("Error fetching shared directory", err);
+        return null;
+    }
 }
 
 export async function shareDirectoryWithEmails(directoryId, emails, role) {
-    const res = await fetch(`${BASE_URL}/share-directory`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ directoryId, emails, role })
-    });
+    try {
+        const { data } = await axiosAPI.post(`/share-directory`, {
+            directoryId,
+            emails,
+            role,
+        });
 
-    if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "Share failed");
+        return data;
+    } catch (err) {
+        const errorMsg = err.response?.data?.error || "Share failed";
+        throw new Error(errorMsg);
     }
-
-    return res.json();
 }
-
 
 export async function deletesharedirectory(dirid) {
     const res = await axiosAPI.delete(`/share/deltesharedirectry/${dirid}`)

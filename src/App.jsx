@@ -1,5 +1,5 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import DirectoryView from './DirectoryView';
+import AppLayout from './AppLayout';
 import RegisterForm from '../components/RegisterForm';
 import Login from '../components/Login';
 import Users from '../pages/Users';
@@ -9,22 +9,25 @@ import { CurrentUserProvider } from '../Context/CurrentUserContent';
 import Profile from '../components/Profile';
 import SharedWithMe from '../pages/SharedWithMe';
 import SharedDirectoryView from '../pages/SharedDirectoryView';
+import SharedDirectoriesList from '../pages/SharedDirectoriesTable';
+import DashboardPage from '../pages/DashboardPage';
 
 const router = createBrowserRouter([
-  { path: '/*', element: <DirectoryView /> },
-  { path: '/directory/:dirId', element: <DirectoryView /> },
-  { path: '/users', element: <Users /> },
-  { path: '/userData/:userId', element: <UserData /> },
+  {
+    path: '/',
+    element: <AppLayout />,
+    children: [
+      { index: true, element: <DashboardPage /> },
+      { path: 'directory/:dirId', element: <DashboardPage /> },
+      { path: 'users', element: <Users /> },
+      { path: 'inbox', element: <SharedWithMe /> },
+      { path: 'shared', element: <SharedDirectoriesList /> },
+    ],
+  },
+  { path: 'profile/:profileid', element: <Profile /> },
+
+  // Auth routes must be OUTSIDE layout
   { path: '/login', element: <Login /> },
-  { path: '/profile/:profileid', element: <Profile /> },
-  {
-    path: '/shared',
-    element: <SharedWithMe />,
-  },
-  {
-    path: '/shared/directories/:id',
-    element: <SharedDirectoryView />,
-  },
   { path: '/register', element: <RegisterForm /> },
 ]);
 

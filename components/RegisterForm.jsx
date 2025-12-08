@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import { useNavigate, Link } from 'react-router-dom';
 import { HashLoader } from 'react-spinners';
+import axiosAPI from '../API/axsios';
 
 const RegisterForm = () => {
   const BASE_URL = 'http://localhost:3000';
@@ -71,6 +72,7 @@ const RegisterForm = () => {
         toast.error(data.error);
       } else {
         toast.success(data.message || 'OTP sent successfully!');
+        setOtpValues(['', '', '', '']);
         setShowOtpBox(true);
         setTimer(600); // reset timer
       }
@@ -124,6 +126,11 @@ const RegisterForm = () => {
       toast.error(data.error);
     } else {
       toast.success('OTP verified successfully!');
+      setFormData((prev) => {
+        const updated = { ...prev, otp: otpValues.join('') };
+        console.log('Updated FormData:', updated); // this WILL show otp
+        return updated;
+      });
       setShowOtpBox(false);
     }
   };
@@ -133,27 +140,42 @@ const RegisterForm = () => {
     e.preventDefault();
     setisRegistered(false);
 
-    const response = await fetch(`${BASE_URL}/user/register`, {
-      method: 'POST',
-      body: JSON.stringify(formData),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    const otp = otpValues.join('');
 
-    const data = await response.json();
-    if (data.error) {
-      toast.error(data.error);
-      setisRegistered(true);
-    } else {
+    try {
+      const { data } = await axiosAPI.post(
+        `/user/register`,
+        { ...formData, otp },
+        { withCredentials: true }
+      );
+
+      // SUCCESS
+      toast.success(data.message || 'Registered successfully');
+
       setisRegistered(true);
       setFormData({
         name: '',
         email: '',
         password: '',
       });
-      toast.success(data.message);
+
       setTimeout(() => navigate('/login'), 2000);
+    } catch (err) {
+      console.log(err);
+
+      // Extract errors safely
+      const errorList = err?.response?.data?.errors;
+      const singleError = err?.response?.data?.error;
+
+      if (singleError) {
+        toast.error(singleError);
+      } else if (Array.isArray(errorList) && errorList.length > 0) {
+        toast.error(errorList[0].message);
+      } else {
+        toast.error('Registration failed');
+      }
+
+      setisRegistered(true);
     }
   };
 
@@ -248,6 +270,7 @@ const RegisterForm = () => {
           <input
             type="text"
             name="name"
+            required
             value={formData.name}
             onChange={handleChange}
             placeholder="Full name"
@@ -259,6 +282,7 @@ const RegisterForm = () => {
             <input
               type="email"
               name="email"
+              required
               value={formData.email}
               onChange={handleChange}
               placeholder="Email"
@@ -272,10 +296,10 @@ const RegisterForm = () => {
               className="w-30 text-sm bg-pink-100 text-pink-500 font-medium rounded-lg hover:bg-pink-200 transition flex justify-center items-center gap-2 disabled:opacity-60"
             >
               {otpLoading ? (
-                <>
-                  <HashLoader size={14} color="#f75c57" />
-                  Sending OTP...
-                </>
+                <div className="flex flex-col items-center justify-center">
+                  <HashLoader size={12} color="#f75c57" />
+                  <span className="text-[12px]">Sending OTP...</span>
+                </div>
               ) : (
                 'Send OTP'
               )}
@@ -286,6 +310,7 @@ const RegisterForm = () => {
           <input
             type="password"
             name="password"
+            required
             value={formData.password}
             onChange={handleChange}
             placeholder="Password"

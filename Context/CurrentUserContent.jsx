@@ -1,7 +1,7 @@
 import { getCurrectUser } from '../API/userAPI';
 import { createContext, useEffect, useState } from 'react';
 
-const CurrentUserContext = createContext(null);
+const CurrentUserContext = createContext({});
 
 export const CurrentUserProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
@@ -10,7 +10,7 @@ export const CurrentUserProvider = ({ children }) => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const user = await getCurrectUser('http://localhost:3000');
+        const user = await getCurrectUser();
         setCurrentUser(user);
       } catch (err) {
         console.error('Failed to fetch current user', err);

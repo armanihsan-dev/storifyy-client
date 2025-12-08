@@ -193,7 +193,7 @@ const UsersTable = ({
     if (!selectedUser) return;
     setLoggingOutUserId(selectedUser._id);
     try {
-      await logoutUser('http://localhost:3000', selectedUser._id);
+      await logoutUser(selectedUser._id);
       setShowLogoutPopup(false);
       await refreshUsers();
       setSelectedUser(null);
@@ -210,7 +210,7 @@ const UsersTable = ({
     setProcessingDeleteId(selectedUser._id);
     try {
       // soft delete
-      await deleteUser('http://localhost:3000', selectedUser._id);
+      await deleteUser(selectedUser._id);
       setShowDeletePopup(false);
       await refreshUsers();
       setSelectedUser(null);
@@ -225,7 +225,7 @@ const UsersTable = ({
     if (!selectedUser) return;
     setProcessingHardDeleteId(selectedUser._id);
     try {
-      await hardDeleteUser('http://localhost:3000', selectedUser._id);
+      await hardDeleteUser(selectedUser._id);
       setShowHardDeleteFinal(false);
       await refreshUsers();
       setSelectedUser(null);
@@ -240,7 +240,7 @@ const UsersTable = ({
     if (!user) return;
     setProcessingRecoverId(user._id);
     try {
-      await recoverUser('http://localhost:3000', user._id);
+      await recoverUser(user._id);
       await refreshUsers();
     } catch (err) {
       console.error('Recover error', err);
@@ -252,7 +252,7 @@ const UsersTable = ({
   /* -------------------- Render -------------------- */
 
   return (
-    <div className="bg-white rounded-3xl p-6 ">
+    <div className="p-6 ">
       {/* Header Section */}
       <div className="mb-6 flex items-center justify-between bg-gradient-to-r from-rose-50 to-pink-50 p-5 rounded-2xl border border-rose-100 shadow-sm">
         <div>

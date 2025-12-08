@@ -68,7 +68,7 @@ const ShareDirectoryDialog = ({
               </div>
               <input
                 type="email"
-                placeholder="colleague@company.com"
+                placeholder="arman@company.com"
                 className="w-full bg-slate-50 border border-slate-200 text-slate-800 pl-10 pr-4 py-3 rounded-xl focus:outline-none focus:ring-1 focus:ring-pink-400 transition-all font-medium placeholder:text-slate-400"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -85,7 +85,7 @@ const ShareDirectoryDialog = ({
               {/* Viewer Option */}
               <div
                 onClick={() => setAccessType('viewer')}
-                className={`relative cursor-pointer p-4 rounded-xl border-2 transition-all duration-200 flex flex-col gap-2 ${
+                className={`relative cursor-pointer p-2 rounded-xl border-2 transition-all duration-200 flex flex-col gap-2 ${
                   accessType === 'viewer'
                     ? 'border-emerald-500 bg-emerald-50/50'
                     : 'border-slate-100 bg-white hover:border-slate-200 hover:bg-slate-50'

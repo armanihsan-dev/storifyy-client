@@ -147,7 +147,7 @@ const SharePopup = ({ isOpen, onClose, fileId, BASE_URL }) => {
   const modalContent = (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[999999] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
           {/* Backdrop */}
           <motion.div
             className="fixed inset-0 bg-gray-900/20 backdrop-blur-sm"
@@ -204,7 +204,7 @@ const SharePopup = ({ isOpen, onClose, fileId, BASE_URL }) => {
                     <input
                       ref={inputRef}
                       type="email"
-                      placeholder="colleague@company.com"
+                      placeholder="arman@company.com"
                       className="w-full bg-gray-50 border-2 border-gray-100 hover:border-gray-200 rounded-xl py-3 pl-11 pr-4 text-gray-700 placeholder-gray-400 focus:outline-none focus:border-[#FF6B6B] focus:bg-white transition-all"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}

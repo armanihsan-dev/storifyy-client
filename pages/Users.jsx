@@ -11,7 +11,7 @@ const Users = () => {
 
   const refreshUsers = async () => {
     try {
-      const response = await getAllUsers('http://localhost:3000');
+      const response = await getAllUsers();
       setUsers(response.data);
     } catch (err) {
       // Auto logout on unauthorized
@@ -24,10 +24,10 @@ const Users = () => {
   useEffect(() => {
     (async () => {
       try {
-        const response = await getAllUsers('http://localhost:3000');
+        const response = await getAllUsers();
         setUsers(response.data);
 
-        const user = await getCurrectUser('http://localhost:3000');
+        const user = await getCurrectUser();
 
         setCurrentUser({
           currectUserName: user.name,

@@ -1,133 +1,93 @@
 import toast from "react-hot-toast";
 import axiosAPI from "./axsios";
 
-const BASE_URL = 'http://localhost:3000';
 
 export const getUserDirectories = async (userid) => {
-
     try {
-        const response = await fetch(`${BASE_URL}/directory/userDirectory/${userid}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            credentials: 'include'
-        })
-        if (!response.ok) {
-            console.error("Access denied to get user directories")
-        }
-        const data = await response.json();
+        const { data } = await axiosAPI.get(`/directory/userDirectory/${userid}`);
         return data;
     } catch (err) {
-        toast.error(err)
+        toast.error("Error fetching user directories");
         console.log("Error fetching user directories", err);
+        return null;
     }
-}
+};
 
 export const getSingleDirectory = async (dirId) => {
     try {
-        const response = await fetch(`http://localhost:3000/directory/singledirectory/${dirId}`, {
-            method: "GET",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            credentials: "include",
-        });
-
-        if (!response.ok) {
-            throw new Error("Failed to fetch directory");
-        }
-
-        const data = await response.json();
+        const { data } = await axiosAPI.get(`/directory/singledirectory/${dirId}`);
         return data;
-
     } catch (error) {
         console.log("Error fetching single directory", error);
         return null;
     }
 };
 
-
-// DELETE DIRECTORY
 export const deleteDirectoryAPI = async (dirId, targetuserid) => {
     try {
-        const res = await fetch(`${BASE_URL}/directory/deleteUserDirectory/${dirId}`, {
-            method: "DELETE",
-            credentials: "include",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ targetuserid })
-        });
-        if (!res.ok) {
-            toast.error("Can't delete directory")
-        }
-        return await res.json();
+        const { data } = await axiosAPI.delete(
+            `/directory/deleteUserDirectory/${dirId}`,
+            { data: { targetuserid } }
+        );
+        return data;
     } catch (err) {
+        toast.error("Can't delete directory");
         console.log("Delete directory error", err);
+        return null;
     }
 };
 
-// RENAME DIRECTORY
 export const renameDirectoryAPI = async (dirId, newName) => {
     try {
-        const res = await fetch(`${BASE_URL}/directory/renameUserDirectory/${dirId}`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            credentials: "include",
-            body: JSON.stringify({ name: newName }),
-        });
-        if (!res.ok) {
-            toast.error("Can't rename directory")
-        }
-        const data = await res.json();
-        return data
+        const { data } = await axiosAPI.put(
+            `/directory/renameUserDirectory/${dirId}`,
+            { name: newName }
+        );
+
+        return data;
     } catch (err) {
+        toast.error("Can't rename directory");
         console.log("Rename error", err);
+        return null;
     }
 };
-
 
 export const deleteUserFile = async (id) => {
     try {
-        const res = await fetch(`${BASE_URL}/file/deleteUserFile/${id}`, {
-            method: 'GET',
-            credentials: 'include',
-        });
+        const { data } = await axiosAPI.get(`/file/deleteUserFile/${id}`);
 
-        const data = await res.json();
-
-        if (!res.ok) {
-            toast.error(data.error || 'Failed to delete file');
+        if (data.error) {
+            toast.error(data.error);
             return;
         }
-        toast.success('File deleted');
 
-
-    } catch (err) {
-        console.log(err);
-        toast.error('Error deleting file');
-    }
-};
-export const renameUserFile = async (fileid, newFilename) => {
-    try {
-        const response = await fetch(`${BASE_URL}/file/renameUserFile/${fileid}`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ newFilename }),
-            credentials: "include",
-        })
-        const data = await response.json();
-        if (!response.ok) {
-            return toast.error(data.error || 'Failed to rename file');
-        }
-        toast.success('File renamed');
+        toast.success("File deleted");
         return data;
     } catch (err) {
+        console.log(err);
+        toast.error("Error deleting file");
+        return null;
+    }
+};
+
+export const renameUserFile = async (fileid, newFilename) => {
+    try {
+        const { data } = await axiosAPI.post(
+            `/file/renameUserFile/${fileid}`,
+            { newFilename }
+        );
+
+        if (data.error) {
+            toast.error(data.error);
+            return null;
+        }
+
+        toast.success("File renamed");
+        return data;
+
+    } catch (err) {
         console.log("Rename file error", err);
+        toast.error("Failed to rename file");
+        return null;
     }
 };

@@ -3,9 +3,8 @@ import FileActionsDropdown from './DropDown';
 import RenameDialog from './RenameDialog';
 import SharePopup from './SharePopup';
 
-export function shortenName(name, max = 20) {
-  if (name.length <= max) return name;
-  return name.slice(0, max) + '...';
+export function shortenName(text, max = 22) {
+  return text.length <= max ? text : text.slice(0, max) + '...';
 }
 
 const FileCard = ({
@@ -18,6 +17,7 @@ const FileCard = ({
   getDirectories,
 }) => {
   const extension = title.split('.').pop().toLowerCase();
+  const baseName = title.replace(/\.[^/.]+$/, '');
   const iconPath = `/fileicons/${extension}.svg`;
 
   const BASE_URL = 'http://localhost:3000';
@@ -32,10 +32,6 @@ const FileCard = ({
     getDirectories();
   }
 
-  function handleRename() {
-    setIsRenaming(true);
-  }
-
   async function saveFilename(id, value) {
     await fetch(`${BASE_URL}/file/${id}`, {
       method: 'PATCH',
@@ -43,65 +39,83 @@ const FileCard = ({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ newFilename: value }),
     });
+
     setIsRenaming(false);
     getDirectories();
   }
 
   return (
-    <div className="relative  isolate w-full lg:w-[240px] lg:h-[240px] rounded-2xl bg-white shadow-sm">
-      <div className="relative z-10 h-full p-6">
-        <div className="flex items-center justify-between">
-          <img
-            src={iconPath}
-            onError={(e) => (e.currentTarget.src = '/fileicons/file.svg')}
-            className="w-[40px] h-[40px]"
-            alt={`${extension} icon`}
-          />
-          <div className="text-sm font-semibold text-slate-700">
-            {sizeLabel}
-          </div>
-        </div>
+    <a href={`${BASE_URL}/file/${id}`} className="block">
+      <div className="cursor-pointer w-full rounded-xl border border-slate-200 bg-white p-4 shadow-sm hover:shadow-md transition">
+        {/* Top section */}
+        <div className="flex items-start justify-between gap-3">
+          {/* ICON + TEXT */}
+          <div className="flex items-start gap-3 min-w-0">
+            {/* ICON */}
+            <img
+              src={iconPath}
+              onError={(e) => (e.currentTarget.src = '/fileicons/file.svg')}
+              className="w-10 h-10 flex-shrink-0"
+              alt={`${extension} icon`}
+            />
 
-        <div className="pt-6">
-          <div className="mt-6 text-lg font-semibold text-slate-800">
-            {shortenName(title.split('.')[0], 22)}
-          </div>
+            <div className="flex flex-col min-w-0">
+              {/* FILENAME */}
+              <p className="text-sm font-semibold text-slate-800 truncate max-w-[160px]">
+                {shortenName(baseName, 22)}
+              </p>
 
-          <div className="mt-4 text-[13px] font-medium text-gray-500/60 flex justify-between items-center">
-            <div>
-              <p>Last update</p>
-              <p className="text-gray-500">{updatedAt}</p>
+              {/* EXT + SIZE */}
+              <p className="text-xs text-slate-500 mt-0.5">
+                {extension.toUpperCase()} • {sizeLabel}
+              </p>
             </div>
+          </div>
 
+          {/* DROPDOWN — stop click so file doesn’t open */}
+          <div
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+          >
             <FileActionsDropdown
               id={id}
               BASE_URL={BASE_URL}
               onDownload={onDownload}
               onPreview={onPreview}
               onDelete={handleDelete}
-              onRename={handleRename}
+              onRename={() => setIsRenaming(true)}
               onShare={() => setShareOpen(true)}
             />
           </div>
         </div>
+
+        {/* Bottom meta row */}
+        <div className="mt-3">
+          <p className="text-xs text-slate-500">
+            Updated:{' '}
+            <span className="text-slate-700 font-semibold">{updatedAt}</span>
+          </p>
+        </div>
+
+        {/* Rename Dialog */}
+        <RenameDialog
+          open={isRenaming}
+          initialName={title}
+          onClose={() => setIsRenaming(false)}
+          onSave={(value) => saveFilename(id, value)}
+        />
+
+        {/* Share Popup */}
+        <SharePopup
+          isOpen={shareOpen}
+          onClose={() => setShareOpen(false)}
+          fileId={id}
+          BASE_URL={BASE_URL}
+        />
       </div>
-
-      {/* Rename Dialog */}
-      <RenameDialog
-        open={isRenaming}
-        initialName={title}
-        onClose={() => setIsRenaming(false)}
-        onSave={(value) => saveFilename(id, value)}
-      />
-
-      {/* Share Popup — OUTSIDE card layout */}
-      <SharePopup
-        isOpen={shareOpen}
-        onClose={() => setShareOpen(false)}
-        fileId={id} // FIXED
-        BASE_URL={BASE_URL}
-      />
-    </div>
+    </a>
   );
 };
 

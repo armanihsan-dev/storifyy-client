@@ -1,12 +1,12 @@
 import { useEffect, useState } from 'react';
-import { getAllSharedDirectories, revokeSharedDirectory } from '../API/share'; // Keep your API import
+import { getAllSharedDirectories, revokeSharedDirectory } from '../API/share';
 import {
   FiFolder,
   FiUsers,
-  FiMoreHorizontal,
   FiTrash2,
-  FiEdit2,
   FiShield,
+  FiChevronDown,
+  FiActivity,
 } from 'react-icons/fi';
 import {
   Dialog,
@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import toast from 'react-hot-toast';
 
-// --- Helper: Generate Initials for Avatars ---
+// --- Helper: Generate Initials ---
 const getInitials = (name) => {
   if (!name) return 'U';
   return name
@@ -28,17 +28,17 @@ const getInitials = (name) => {
     .toUpperCase();
 };
 
-// --- Helper: Color mapping for avatars based on name length (consistent randomish colors) ---
-const getAvatarColor = (name) => {
-  const colors = [
-    'bg-blue-500',
-    'bg-purple-500',
-    'bg-pink-500',
-    'bg-indigo-500',
-    'bg-teal-500',
-    'bg-orange-500',
+// --- Helper: Modern Gradient mapping for avatars ---
+const getAvatarStyle = (name) => {
+  const styles = [
+    'bg-gradient-to-br from-blue-400 to-blue-600 shadow-blue-200',
+    'bg-gradient-to-br from-purple-400 to-purple-600 shadow-purple-200',
+    'bg-gradient-to-br from-pink-400 to-pink-600 shadow-pink-200',
+    'bg-gradient-to-br from-indigo-400 to-indigo-600 shadow-indigo-200',
+    'bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-emerald-200',
+    'bg-gradient-to-br from-orange-400 to-orange-600 shadow-orange-200',
   ];
-  return colors[name.length % colors.length];
+  return styles[name.length % styles.length];
 };
 
 export default function SharedDirectoriesList() {
@@ -55,6 +55,7 @@ export default function SharedDirectoriesList() {
       setData(res.directories || []);
     } catch (err) {
       console.error(err);
+      toast.error('Failed to load directories');
     } finally {
       setLoading(false);
     }
@@ -64,12 +65,16 @@ export default function SharedDirectoriesList() {
     fetchData();
   }, []);
 
-  // --- Loading State ---
+  // --- Loading State (Skeleton) ---
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 space-y-4 animate-pulse">
-        <div className="h-40 w-full bg-slate-100 rounded-2xl"></div>
-        <div className="h-40 w-full bg-slate-100 rounded-2xl"></div>
+      <div className="grid gap-6 py-8">
+        {[1, 2].map((i) => (
+          <div
+            key={i}
+            className="h-32 w-full  rounded-3xl animate-pulse border border-slate-200"
+          />
+        ))}
       </div>
     );
   }
@@ -77,155 +82,176 @@ export default function SharedDirectoriesList() {
   // --- Empty State ---
   if (data.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 px-4 text-center bg-slate-50 rounded-3xl border border-dashed border-slate-300 mt-6">
-        <div className="bg-white p-4 rounded-full shadow-sm mb-4">
-          <FiUsers className="w-8 h-8 text-slate-400" />
+      <div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-white rounded-lg border-2 border-dashed border-slate-200 mt-6 group cursor-default hover:border-indigo-200 transition-colors duration-300">
+        <div className="bg-indigo-50 p-5 rounded-full mb-5 group-hover:scale-110 transition-transform duration-300">
+          <FiUsers className="w-8 h-8 text-indigo-500" />
         </div>
-        <h3 className="text-lg font-semibold text-slate-700">
+        <h3 className="text-xl font-bold text-slate-800">
           No Shared Directories
         </h3>
-        <p className="text-sm text-slate-500 mt-1 max-w-xs">
-          You haven't shared any folders yet. Start collaborating by sharing a
-          directory!
+        <p className="text-slate-500 mt-2 max-w-xs leading-relaxed">
+          Your collaborative space is empty. Start by sharing a directory to see
+          it here.
         </p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-8 mt-8 ">
+    <div className="bg-transparent mt-8 p-8">
+      <h2 className="text-2xl font-bold text-slate-800 px-1">Shared Access</h2>
+
       {data.map((dir) => (
         <div
           key={dir.directoryId}
-          className="group bg-white rounded-3xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-slate-100 overflow-hidden transition-all duration-300 hover:border-indigo-100 hover:shadow-xl"
+          className="group relative mt-3   bg-white rounded-lg border  shadow-sm  transition-all duration-500 overflow-hidden"
         >
-          {/* --- Card Header --- */}
-          <div className="bg-gradient-to-r from-slate-50 to-white p-6 border-b border-slate-100 flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              {/* Folder Icon Box */}
-              <div className="flex items-center justify-center w-12 h-12 bg-indigo-100 text-indigo-600 rounded-2xl shadow-inner">
-                <FiFolder className="w-6 h-6" />
+          {/* --- Card Header (Visible Always) --- */}
+          <div className="relative p-6 z-10 bg-white flex items-center justify-between cursor-pointer">
+            <div className="flex items-center gap-5">
+              {/* Animated Icon */}
+              <div className="relative flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-100 shadow-inner group-hover:from-indigo-50 group-hover:to-white transition-colors duration-500">
+                <FiFolder className="w-7 h-7 text-yellow-400  transition-colors duration-500" />
+                <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-white rounded-full flex items-center justify-center border border-slate-100 shadow-sm">
+                  <FiActivity className="w-3 h-3 text-emerald-500" />
+                </div>
               </div>
 
               <div>
-                <h2 className="text-xl font-bold text-slate-800 tracking-tight">
+                <h3 className="text-lg font-bold text-pink-400 tracking-tight  transition-colors duration-300">
                   {dir.name}
-                </h2>
-                <div className="flex items-center gap-2 text-xs font-medium text-slate-500 mt-0.5">
-                  <FiUsers className="w-3.5 h-3.5" />
+                </h3>
+                <p className="text-sm text-slate-500 font-medium mt-0.5 flex items-center gap-2">
                   <span>Shared with {dir.sharedWith.length} members</span>
-                </div>
+                </p>
+              </div>
+            </div>
+
+            {/* Right Side: Face Pile Summary & Indicator */}
+            <div className="flex items-center gap-6">
+              {/* Expand Icon */}
+              <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center group-hover:bg-indigo-50 transition-colors duration-300">
+                <FiChevronDown className="w-5 h-5 text-slate-400 group-hover:text-indigo-600 group-hover:rotate-180 transition-all duration-500" />
               </div>
             </div>
           </div>
 
-          {/* --- Shared Users List --- */}
-          <div className="p-2">
-            <div className="max-h-[300px] overflow-y-auto custom-scrollbar px-2 py-2 space-y-1">
-              {dir.sharedWith.map((userObj, index) => (
-                <div
-                  key={index}
-                  className="group/row flex flex-col sm:flex-row sm:items-center justify-between bg-white p-3 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all duration-200"
-                >
-                  {/* Left: User Profile */}
-                  <div className="flex items-center gap-3 mb-3 sm:mb-0">
-                    {/* Avatar */}
+          {/* --- Expandable Section (The "Magic" CSS Transition) --- */}
+          {/* We use grid-rows transition to animate height from 0 to auto smoothly */}
+          <div className="grid grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-[grid-template-rows] duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]">
+            <div className="overflow-hidden">
+              <div className="p-6 pt-0 bg-white">
+                <div className="w-full h-px bg-gradient-to-r from-transparent via-slate-200 to-transparent mb-4 opacity-50" />
+
+                <div className="flex flex-col gap-2 max-h-[320px] overflow-y-auto pr-2 custom-scrollbar">
+                  {dir.sharedWith.map((userObj, index) => (
                     <div
-                      className={`w-10 h-10 ${getAvatarColor(
-                        userObj.name
-                      )} rounded-full flex items-center justify-center text-white text-sm font-bold shadow-sm shrink-0`}
+                      key={index}
+                      className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all duration-200 group/row"
                     >
-                      {getInitials(userObj.name)}
-                    </div>
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-10 h-10 rounded-full  flex bg-rose-50 items-center justify-center text-rose-600 text-sm font-bold`}
+                        >
+                          {getInitials(userObj.name)}
+                        </div>
+                        <div>
+                          <p className="text-[12px] font-semibold text-slate-800">
+                            {userObj.name}
+                          </p>
+                          <p className="text-[10px] text-slate-400 font-mono">
+                            {userObj.sharedWith}
+                          </p>
+                        </div>
+                      </div>
 
-                    <div className="flex flex-col">
-                      <span className="text-sm font-semibold text-slate-700">
-                        {userObj.name}
-                      </span>
-                      <span className="text-xs text-slate-400 font-mono">
-                        {userObj.sharedWith}
-                      </span>
-                    </div>
-                  </div>
+                      <div className="flex items-center gap-2">
+                        {/* Role Badge */}
+                        <div
+                          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[8px]  uppercase tracking-wider border ${
+                            userObj.accessType === 'editor'
+                              ? 'bg-emerald-50/50 text-emerald-600 border-emerald-100'
+                              : 'bg-blue-50/50 text-blue-600 border-blue-100'
+                          }`}
+                        >
+                          <FiShield className="w-3 h-3" />
+                          {userObj.accessType}
+                        </div>
 
-                  {/* Right: Badge & Actions */}
-                  <div className="flex items-center justify-between sm:justify-end w-full sm:w-auto gap-4 pl-12 sm:pl-0">
-                    {/* Access Badge */}
-                    <div
-                      className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide border ${
-                        userObj.accessType === 'editor'
-                          ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
-                          : 'bg-slate-100 text-slate-500 border-slate-200'
-                      }`}
-                    >
-                      <FiShield className="w-3 h-3" />
-                      {userObj.accessType}
+                        {/* Revoke Button (Appears on Row Hover) */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation(); // Prevent triggering other clicks
+                            setSelectedDirectory(dir);
+                            setDeletePopupOpen(true);
+                            setSelectedUser(userObj);
+                          }}
+                          className="opacity-100  p-2 bg-rose-50 text-rose-600 rounded-full hover:bg-rose-100 transition-all duration-200"
+                          title="Revoke Access"
+                        >
+                          <FiTrash2 className=" w-3 h-3" />
+                        </button>
+                      </div>
                     </div>
-
-                    {/* Action Buttons (Visible on Hover) */}
-                    <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover/row:opacity-100 transition-opacity duration-200">
-                      <button
-                        onClick={() => {
-                          setSelectedDirectory(dir);
-                          setDeletePopupOpen(true);
-                          setSelectedUser(userObj);
-                        }}
-                        className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-all"
-                        title="Revoke Directory"
-                      >
-                        <FiTrash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
+                  ))}
                 </div>
-              ))}
+              </div>
             </div>
           </div>
-
-          {/* Footer Visual (Optional) */}
-          <div className="bg-slate-50 h-2 w-full border-t border-slate-100"></div>
         </div>
       ))}
+
+      {/* --- Revoke Dialog --- */}
       <Dialog open={deletePopupOpen} onOpenChange={setDeletePopupOpen}>
-        <DialogContent className="max-w-sm">
-          <DialogHeader>
-            <DialogTitle className="text-lg font-semibold text-slate-800">
-              Revoke Shared Directory?
+        <DialogContent className="sm:max-w-[400px] p-0 overflow-hidden rounded-2xl gap-0">
+          <DialogHeader className="p-6 pb-2">
+            <div className="w-12 h-12 bg-rose-50 rounded-full flex items-center justify-center mb-4">
+              <FiTrash2 className="w-6 h-6 text-rose-600" />
+            </div>
+            <DialogTitle className="text-xl font-bold text-slate-800">
+              Revoke Access
             </DialogTitle>
           </DialogHeader>
 
-          <p className="text-sm text-slate-600 mt-2">
-            Are you sure you want to revoke access for directory:
-            <span className="font-semibold text-slate-800">
-              {selectedDirectory?.name}
-            </span>
-            ?
-          </p>
+          <div className="px-6 py-2">
+            <p className="text-slate-500 text-sm leading-relaxed">
+              Are you sure you want to remove{' '}
+              <span className="font-bold text-slate-800">
+                {selectedUser?.name}
+              </span>{' '}
+              from
+              <span className="font-bold text-slate-800">
+                {' '}
+                {selectedDirectory?.name}
+              </span>
+              ? They will lose all access immediately.
+            </p>
+          </div>
 
-          <DialogFooter className="mt-6 flex justify-end gap-2">
+          <DialogFooter className="bg-slate-50/50 p-6 gap-3 mt-4">
             <button
               onClick={() => setDeletePopupOpen(false)}
-              className="px-4 py-2 text-sm bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 transition"
+              className="flex-1 px-4 py-2.5 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors"
             >
               Cancel
             </button>
-
             <button
               onClick={async () => {
-                console.log('Revoke directory:', selectedDirectory);
-                console.log('selected user', selectedUser);
-                // TODO: Add your revoke API call here
-                await revokeSharedDirectory(
-                  selectedDirectory.directoryId,
-                  selectedUser.sharedWith
-                );
-                toast.success('Directory revocked');
-                await fetchData();
-                setDeletePopupOpen(false);
+                try {
+                  await revokeSharedDirectory(
+                    selectedDirectory.directoryId,
+                    selectedUser.sharedWith
+                  );
+                  toast.success('Access revoked successfully');
+                  await fetchData();
+                  setDeletePopupOpen(false);
+                } catch (e) {
+                  toast.error('Could not revoke access');
+                }
               }}
-              className="px-4 py-2 text-sm bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition"
+              className="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-rose-600 rounded-xl hover:bg-rose-700 shadow-lg shadow-rose-200 transition-all"
             >
-              Revoke
+              Yes, Revoke
             </button>
           </DialogFooter>
         </DialogContent>

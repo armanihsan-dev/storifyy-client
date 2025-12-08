@@ -173,7 +173,7 @@ const AuthDropDown = ({ BASEURL }) => {
               <DropdownMenuItem
                 onClick={async (e) => {
                   e.preventDefault();
-                  await logoutFromAllAccounts(BASEURL);
+                  await logoutFromAllAccounts();
                   navigate('/login');
                 }}
                 className={`${menuItemClass} !text-red-600 hover:!bg-red-50 hover:!text-red-700 focus:!bg-red-50`}

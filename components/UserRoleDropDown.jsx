@@ -104,11 +104,7 @@ const UserRoleDropDown = ({ user, setSelectedUser }) => {
                   <AlertDialogAction
                     onClick={async () => {
                       try {
-                        const res = await changeRole(
-                          'http://localhost:3000',
-                          user._id,
-                          role
-                        );
+                        const res = await changeRole(user._id, role);
 
                         if (res?.error) return;
 

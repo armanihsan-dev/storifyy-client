@@ -63,7 +63,7 @@ const DirDropdown = ({ id, onDelete, onRename }) => {
           <Button
             variant="ghost"
             size="icon"
-            className="h-9 w-9 rounded-full text-gray-400 hover:text-rose-500 hover:bg-rose-50 transition-all duration-300 active:scale-95 focus:ring-2 focus:ring-rose-200"
+            className="h-9 w-9 rounded-full text-gray-400 hover:text-slate-500 hover:bg-slate-50 transition-all duration-300 active:scale-95 focus:ring-2 focus:ring-rose-200"
           >
             <FiMoreVertical size={20} />
           </Button>

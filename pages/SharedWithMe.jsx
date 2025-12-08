@@ -83,11 +83,11 @@ const SharedWithMe = () => {
   };
 
   return (
-    <div className="relative h-screen w-full bg-[#F3F4F6] overflow-hidden text-slate-800">
+    <div className="relative h-screen w-full overflow-hidden text-slate-800">
       {/* --- BACKGROUND AMBIANCE (Glow Blobs) --- */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-        <div className="absolute top-[-10%] left-[-5%] w-[500px] h-[500px] bg-rose-200/40 rounded-full blur-[100px] opacity-70" />
-        <div className="absolute  bottom-[10%] right-[-5%] w-[400px] h-[400px] bg-purple-200/40 rounded-full blur-[100px] opacity-70" />
+        {/* <div className="absolute top-[-10%] left-[-5%] w-[500px] h-[500px] bg-rose-200/40 rounded-full blur-[100px] opacity-70" />
+        <div className="absolute  bottom-[10%] right-[-5%] w-[400px] h-[400px] bg-purple-200/40 rounded-full blur-[100px] opacity-70" /> */}
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-6 py-12">
@@ -99,7 +99,7 @@ const SharedWithMe = () => {
         >
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <div className="p-3 bg-white rounded-2xl shadow-sm text-rose-500">
+              <div className="p-3 bg-white rounded-full shadow-sm text-rose-500">
                 <FiShare2 size={24} />
               </div>
               <h2 className="text-3xl font-bold tracking-tight text-slate-800">

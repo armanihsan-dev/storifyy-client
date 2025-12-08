@@ -65,7 +65,7 @@ const UserData = ({
     try {
       const data = await getUserDirectories(userId);
       if (!data) {
-        return navigate('/login');
+        return navigate('/users');
       } else if (data.isNormalUser || data.isLowerRank) {
         toast.error('Access denied !!');
         return navigate('/users');
