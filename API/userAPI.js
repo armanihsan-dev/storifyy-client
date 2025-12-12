@@ -9,7 +9,7 @@ export async function logoutFromAllAccounts() {
     } catch (err) {
         console.log(err);
     }
-}
+}   
 
 // GET CURRENT USER
 export async function getCurrectUser() {

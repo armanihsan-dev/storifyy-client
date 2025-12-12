@@ -50,55 +50,57 @@ const SharedDirectoryCard = ({ directory, onDelete }) => {
         onClick={() => navigate(`/shared/directories/${directory._id}`)}
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-        className="group relative w-full h-46 bg-white rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer overflow-hidden flex flex-col justify-between"
+        transition={{ type: 'spring', stiffness: 280, damping: 22 }}
+        className="group relative w-full bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer overflow-hidden"
       >
-        {/* Hover Actions (bottom Right) */}
+        {/* Hover Actions */}
         {directory.sharedRole === 'editor' && (
-          <div className="absolute bottom-5 right-4 z-20 flex gap-2">
-            {/* RENAME BUTTON */}
+          <div className="absolute bottom-4 right-4 z-20 flex gap-2">
+            {/* Rename */}
             <motion.button
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: isHovered ? 1 : 0, x: isHovered ? 0 : 10 }}
-              transition={{ delay: 0.05 }} // Slight stagger
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: isHovered ? 1 : 0, y: isHovered ? 0 : -6 }}
+              transition={{ duration: 0.15 }}
               onClick={(e) => {
                 e.stopPropagation();
-                setNewName(directory.name); // Reset name on open
+                setNewName(directory.name);
                 setRenameOpen(true);
               }}
-              className="p-2 rounded-full cursor-pointer bg-white/90 backdrop-blur-sm text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 border border-slate-200 shadow-sm transition-colors"
-              title="Rename Folder"
+              className="p-2 rounded-full bg-white/80 backdrop-blur text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 border border-slate-200 shadow-sm transition-colors"
             >
-              <Edit2 size={18} />
+              <Edit2 size={17} />
             </motion.button>
 
-            {/* DELETE BUTTON */}
+            {/* Delete */}
             <motion.button
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: isHovered ? 1 : 0, x: isHovered ? 0 : 10 }}
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: isHovered ? 1 : 0, y: isHovered ? 0 : -6 }}
+              transition={{ duration: 0.15, delay: 0.05 }}
               onClick={(e) => {
                 e.stopPropagation();
                 setConfirmOpen(true);
               }}
-              className="p-2 rounded-full cursor-pointer bg-white/90 backdrop-blur-sm text-slate-400 hover:text-red-500 hover:bg-red-50 border border-slate-200 shadow-sm transition-colors"
-              title="Delete Folder"
+              className="p-2 rounded-full bg-white/80 backdrop-blur text-slate-500 hover:text-red-500 hover:bg-red-50 border border-slate-200 shadow-sm transition-colors"
             >
-              <Trash2 size={18} />
+              <Trash2 size={17} />
             </motion.button>
           </div>
         )}
 
-        {/* Card Content */}
-        <div className="p-6 flex flex-col relative z-10">
-          <div className="mb-5 flex items-center gap-3">
-            <div className="w-14 h-14 flex items-center bg-amber-50 rounded-full justify-center">
-              <Folder className="text-amber-500 fill-amber-500/20" size={28} />
+        {/* Card Body */}
+        <div className="p-6">
+          <div className="flex items-center gap-4 mb-6">
+            {/* Icon */}
+            <div className="w-14 h-14 flex items-center justify-center rounded-full bg-amber-50 border border-amber-200/40">
+              <Folder className="text-amber-500" size={28} />
             </div>
-            <div className="flex-grow">
-              <h3 className="text-lg font-bold text-slate-800 tracking-tight truncate mb-1">
+
+            {/* Title */}
+            <div className="flex flex-col flex-grow">
+              <h3 className="text-[1.05rem] font-semibold text-slate-800 truncate">
                 {directory.name}
               </h3>
-              <p className="text-xs text-slate-400 font-medium flex items-center gap-1">
+              <p className="text-xs text-slate-400 flex items-center gap-1 mt-1">
                 <Clock size={12} />
                 {new Date(directory.sharedAt).toLocaleDateString(undefined, {
                   year: 'numeric',
@@ -109,9 +111,10 @@ const SharedDirectoryCard = ({ directory, onDelete }) => {
             </div>
           </div>
 
-          <div className="mt-4 pt-4 border-t border-slate-50 flex items-center justify-between">
+          {/* Role Badge */}
+          <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
             <span
-              className={`text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg flex items-center gap-1.5 ${roleClass}`}
+              className={`text-[11px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-lg flex items-center gap-1.5 ${roleClass}`}
             >
               <Shield size={10} />
               {directory.sharedRole || 'Viewer'}
@@ -119,7 +122,8 @@ const SharedDirectoryCard = ({ directory, onDelete }) => {
           </div>
         </div>
 
-        <div className="absolute -right-10 -bottom-10 w-32 h-32 bg-amber-500/5 rounded-full blur-3xl pointer-events-none transition-all group-hover:bg-rose-500/10" />
+        {/* Soft Background Glow */}
+        <div className="absolute -right-12 -bottom-12 w-36 h-36 bg-amber-500/5 rounded-full blur-2xl group-hover:bg-pink-500/10 transition-all duration-300" />
       </motion.div>
 
       {/* --- RENAME POPUP --- */}

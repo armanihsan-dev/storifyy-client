@@ -4,8 +4,6 @@ import toast, { Toaster } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  FiUser,
-  FiMail,
   FiShield,
   FiLock,
   FiEdit3,
@@ -16,6 +14,9 @@ import {
   FiX,
   FiKey,
 } from 'react-icons/fi';
+import { useCurrentUser } from '@/hooks/otherHooks';
+import { useQueryClient } from '@tanstack/react-query';
+import StorageUsage from './StorageUsage';
 
 // --- ANIMATION VARIANTS ---
 const containerVar = {
@@ -28,9 +29,6 @@ const itemVar = {
 };
 
 const Profile = () => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(false);
-
   // Popup States
   const [activePopup, setActivePopup] = useState(null); // 'create', 'update', 'forgot', 'otp'
 
@@ -43,49 +41,18 @@ const Profile = () => {
   const [error, setError] = useState(false);
 
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  // --- HELPER: Calculate Account Age ---
-  const getAccountAge = (dateString) => {
-    const created = new Date(dateString);
-    const now = new Date();
-    const diffTime = Math.abs(now - created);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays + ' days';
-  };
-
-  // --- API FUNCTIONS (Kept exact logic) ---
-  async function fetchUser() {
-    try {
-      const res = await fetch(`${BASE_URL}/user`, { credentials: 'include' });
-      const data = await res.json();
-      if (!res.ok) {
-        if (data.error === 'Not logged!') navigate('/');
-        return;
-      }
-      setUser({
-        ...data,
-        formattedDate: new Date(data.createdAt).toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric',
-        }),
-        formattedUpdate: new Date(data.updatedAt).toLocaleDateString('en-US', {
-          month: 'short',
-          day: 'numeric',
-        }),
-        accountAge: getAccountAge(data.createdAt),
-      });
-    } catch (e) {
-      console.error(e);
-    }
-  }
+  // --- React Query User Data ---
+  const { data: user, isPending, isError } = useCurrentUser();
+  console.log('USER', user);
 
   async function handleCreatePassword() {
     if (!password.trim()) {
       setError(true);
       return;
     }
-    setLoading(true);
+
     try {
       const res = await fetch(`${BASE_URL}/user/setPassword`, {
         method: 'POST',
@@ -93,16 +60,21 @@ const Profile = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password }),
       });
+
       const result = await res.json();
       if (!res.ok) throw new Error(result?.error);
+
       toast.success('Security enabled successfully!');
+
+      // Close popup + clear input
       setActivePopup(null);
       setPassword('');
-      fetchUser();
+
+      // Refresh React Query user data
+      queryClient.invalidateQueries(['current-user']);
     } catch (err) {
       toast.error(err.message || 'Failed');
     }
-    setLoading(false);
   }
 
   async function handleUpdatePassword() {
@@ -110,7 +82,7 @@ const Profile = () => {
       setError(true);
       return;
     }
-    setLoading(true);
+
     try {
       const res = await fetch(`${BASE_URL}/user/updatePassword`, {
         method: 'POST',
@@ -118,15 +90,17 @@ const Profile = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ oldPassword, newPassword }),
       });
+
       const result = await res.json();
       if (!res.ok) throw new Error(result.error || 'Wrong password');
-      navigate('/login');
+
       toast.success('Password updated! Please login.');
       setActivePopup(null);
+
+      navigate('/login');
     } catch (err) {
       toast.error(err.message);
     }
-    setLoading(false);
   }
 
   async function handleSendOTP() {
@@ -134,7 +108,7 @@ const Profile = () => {
       setError(true);
       return;
     }
-    setLoading(true);
+
     try {
       const res = await fetch(`${BASE_URL}/user/sendotp`, {
         method: 'POST',
@@ -142,22 +116,26 @@ const Profile = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: emailForOTP }),
       });
+
       if (!res.ok) throw new Error('Failed to send OTP');
+
       toast.success('Code sent to ' + emailForOTP);
+
       setOtp(['', '', '', '']);
       setActivePopup('otp');
     } catch (err) {
       toast.error(err.message);
     }
-    setLoading(false);
   }
 
   async function handleVerifyOTP() {
     const code = otp.join('');
+
     if (code.length !== 4) {
       toast.error('Enter 4 digits');
       return;
     }
+
     try {
       const res = await fetch(`${BASE_URL}/user/verifyotp`, {
         method: 'POST',
@@ -165,19 +143,19 @@ const Profile = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ otp: code, email: emailForOTP }),
       });
+
       if (!res.ok) throw new Error('Invalid Code');
+
       toast.success('Verified!');
       setActivePopup('create');
       setPassword('');
-      fetchUser();
+
+      // Refresh React Query state
+      queryClient.invalidateQueries(['current-user']);
     } catch (err) {
       toast.error(err.message);
     }
   }
-
-  useEffect(() => {
-    fetchUser();
-  }, []);
 
   if (!user)
     return (
@@ -292,6 +270,13 @@ const Profile = () => {
             </motion.div>
           </div>
 
+          <motion.div variants={itemVar}>
+            <StorageUsage
+              usedStorage={user.usedStorage}
+              maxStorage={user.maxStorage}
+            />
+          </motion.div>
+
           {/* ROW 2: Security Control Center */}
           <motion.div
             variants={itemVar}
@@ -327,6 +312,7 @@ const Profile = () => {
               >
                 {user.hasPassword ? <FiCheckCircle /> : <FiAlertTriangle />}
                 {user.hasPassword ? 'SECURE' : 'AT RISK'}
+
               </div>
             </div>
 
@@ -500,10 +486,10 @@ const Profile = () => {
                       if (activePopup === 'forgot') handleSendOTP();
                       if (activePopup === 'otp') handleVerifyOTP();
                     }}
-                    disabled={loading}
+                    disabled={isPending}
                     className="w-full py-4 rounded-2xl bg-[#FF6B6B] hover:bg-[#ff5252] text-white font-bold shadow-lg shadow-[#FF6B6B]/30 active:scale-[0.98] transition-all disabled:opacity-70 disabled:scale-100"
                   >
-                    {loading ? 'Processing...' : 'Confirm'}
+                    {isPending ? 'Processing...' : 'Confirm'}
                   </button>
                 </div>
               </div>

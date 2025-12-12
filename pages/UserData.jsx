@@ -4,11 +4,9 @@ import CreateDirectory from '../components/CreateDirectory';
 import { useContext, useEffect, useState } from 'react';
 import {
   deleteDirectoryAPI,
-  deleteUserFile,
   getSingleDirectory,
   getUserDirectories,
   renameDirectoryAPI,
-  renameUserFile,
 } from '../API/RoleAPI';
 
 import FileTile from '../components/UserData/FileTitle';
@@ -239,7 +237,7 @@ const UserData = ({
       <div className="bg-white p-6 rounded-2xl shadow-sm">
         <h3 className="text-lg font-semibold text-gray-600 mb-4">User Files</h3>
 
-        <div className="border border-dashed border-gray-300 p-10 rounded-xl">
+        <div className="rounded-xl">
           {!directory ? (
             <p className="text-gray-500">Loading...</p>
           ) : directory.directories?.length === 0 &&

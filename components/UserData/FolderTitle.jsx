@@ -3,7 +3,7 @@ import DirDropDown from './DirDropDown';
 
 const FolderTile = ({ directory, onOpen, onDelete, onRename }) => {
   return (
-    <div className="w-full sm:w-52 group relative cursor-pointer p-4 border rounded-xl bg-white hover:bg-gray-50 shadow-sm hover:shadow-md transition-all">
+    <div className="w-full sm:w-50 group relative cursor-pointer p-4 border rounded-xl bg-white hover:bg-gray-50 shadow-sm hover:shadow-md transition-all">
       {/* CLICK TO OPEN DIRECTORY */}
       <div onClick={() => onOpen(directory._id)}>
         <Folder className="w-10 h-10 text-yellow-500 group-hover:text-yellow-600" />

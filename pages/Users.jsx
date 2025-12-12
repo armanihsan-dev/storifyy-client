@@ -3,12 +3,15 @@ import { getAllUsers, getCurrectUser } from '../API/userAPI';
 import UsersTable from '../components/UsersTable';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSectionStore } from '@/store/sectionStore';
 
 const Users = () => {
   const [Users, setUsers] = useState([]);
   const [currentUser, setCurrentUser] = useState({});
   const navigate = useNavigate();
+  const setSection = useSectionStore((s) => s.setSection);
 
+  useEffect(() => setSection('users'), []);
   const refreshUsers = async () => {
     try {
       const response = await getAllUsers();

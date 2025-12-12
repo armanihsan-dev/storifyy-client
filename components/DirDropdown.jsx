@@ -1,7 +1,14 @@
 import { useState } from 'react';
 
-import toast from 'react-hot-toast';
-
+import {
+  CircleAlert,
+  FileImage,
+  Calendar,
+  HardDrive,
+  FolderOpen,
+  Share2,
+  X,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -41,14 +48,20 @@ import {
 import { Link } from 'react-router-dom';
 import { shareDirectoryByEmail } from '../API/share';
 import ShareDirectoryDialog from './ShareDirectoryDialog';
+import { formatFileSize } from '../utility/functions';
+import { useDirectoryContent } from '@/hooks/useDirectory';
 
-const DirDropdown = ({ id, onDelete, onRename }) => {
+const DirDropdown = ({ id, onDelete, onRename, details }) => {
   const [isDeleteAlertOpen, setIsDeleteAlertOpen] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [dirDetails, setDirDetails] = useState(null);
 
   const [email, setEmail] = useState('');
   const [accessType, setAccessType] = useState('viewer');
   const BASE_URL = 'http://localhost:3000';
+
+  const { data, error, isPending } = useDirectoryContent(id);
   const itemClass =
     'cursor-pointer py-2.5 px-3 rounded-lg hover:bg-rose-50 hover:text-rose-600 focus:bg-rose-50 focus:text-rose-600 text-gray-600 font-medium transition-all duration-200 flex items-center gap-3 group';
 
@@ -79,6 +92,14 @@ const DirDropdown = ({ id, onDelete, onRename }) => {
           </DropdownMenuLabel>
 
           {/* Open Directory */}
+          <DropdownMenuItem
+            onClick={() => setIsDetailsOpen(true)}
+            className={itemClass}
+          >
+            <CircleAlert size={16} className={iconClass} />
+            <span>Details</span>
+          </DropdownMenuItem>
+
           <DropdownMenuItem asChild className={itemClass}>
             <Link to={`/directory/${id}`} className="flex items-center gap-3">
               <FiEye size={16} className={iconClass} />
@@ -138,6 +159,122 @@ const DirDropdown = ({ id, onDelete, onRename }) => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <AlertDialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+        <AlertDialogContent className="p-8 rounded-3xl max-w-xl shadow-2xl bg-white dark:bg-zinc-950 ">
+          {/* Close Button */}
+          <AlertDialogCancel asChild>
+            <button className="absolute right-5 top-5 h-9 w-9 bg-gray-100 dark:bg-zinc-800 hover:bg-gray-200 dark:hover:bg-zinc-700 flex items-center justify-center rounded-xl transition">
+              <X className="w-5 h-5 text-gray-600 dark:text-gray-300" />
+            </button>
+          </AlertDialogCancel>
+
+          {/* HEADER */}
+          <div className="flex items-start gap-4 mt-2">
+            <div className="w-14 h-14 bg-pink-100 dark:bg-zinc-800 rounded-full flex items-center justify-center">
+              <FolderOpen className="w-8 h-8 text-pink-600 dark:text-pink-300" />
+            </div>
+
+            <div>
+              <h2 className="text-[1.10rem] font-semibold text-gray-900 dark:text-gray-100">
+                {details.name}
+              </h2>
+
+              <span className="inline-block mt-0.5 text-[0.70rem] font-medium bg-pink-50 text-pink-700 dark:bg-pink-900/40 dark:text-blue-300 px-3 py-1 rounded-full">
+                Directory
+              </span>
+            </div>
+          </div>
+
+          {/* INFO GRID — extended */}
+          <div className="flex flex-col gap-6 mt-6 text-sm">
+            {/* Size */}
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="text-[11px] uppercase tracking-wide text-gray-500 flex items-center gap-1">
+                  <HardDrive className="w-4 h-4" /> Size
+                </p>
+                <p className="mt-1 font-semibold text-gray-900 dark:text-gray-200">
+                  <p className="mt-1 font-semibold text-gray-900 dark:text-gray-200">
+                    {formatFileSize(details.size)}
+                  </p>
+                </p>
+              </div>
+
+              {/* Files Count */}
+              <div>
+                <p className="text-[11px] uppercase tracking-wide text-gray-500">
+                  Files
+                </p>
+                <p className="mt-1 font-semibold text-gray-900 dark:text-gray-200">
+                  {data?.fileCount ?? 0}
+                </p>
+              </div>
+
+              {/* Subdirectories */}
+              <div>
+                <p className="text-[11px] uppercase tracking-wide text-gray-500">
+                  Subdirectories
+                </p>
+                <p className="mt-1 font-semibold text-gray-900 dark:text-gray-200">
+                  {data?.dirCount ?? 0}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between">
+              {/* Created */}
+              <div>
+                <p className="text-[11px] uppercase tracking-wide text-gray-500 flex items-center gap-1">
+                  <Calendar className="w-4 h-4" /> Created
+                </p>
+                <p className="mt-1 font-semibold text-gray-900 dark:text-gray-200">
+                  {new Date(details.createdAt).toLocaleString()}
+                </p>
+              </div>
+
+              {/* Modified */}
+              <div>
+                <p className="text-[11px] uppercase tracking-wide text-gray-500 flex items-center gap-1">
+                  <Calendar className="w-4 h-4" /> Modified
+                </p>
+                <p className="mt-1 font-semibold text-gray-900 dark:text-gray-200">
+                  {new Date(details.updatedAt).toLocaleString()}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* PATH */}
+          <div className="mt-6">
+            <p className="text-[11px] uppercase tracking-wide text-gray-500 mb-2 flex items-center gap-2">
+              <FolderOpen className="w-4 h-4" /> Path
+            </p>
+
+            <div className="bg-gray-100 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl px-4 py-3">
+              <code className="text-sm font-mono text-gray-800 dark:text-gray-300">
+                {details.path}
+              </code>
+            </div>
+          </div>
+
+          {/* SHARE BANNER (only if link is public) */}
+          <div className="mt-2   p-4 rounded-2xl bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 flex items-start gap-3">
+            <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-800 flex items-center justify-center">
+              <Share2 className="text-green-600 dark:text-green-300" />
+            </div>
+
+            <div>
+              <p className="font-semibold text-green-700 dark:text-green-300">
+                Shared via link
+              </p>
+              <p className="text-sm text-green-600 dark:text-green-400">
+                Publicly accessible
+              </p>
+            </div>
+          </div>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <ShareDirectoryDialog
         isShareOpen={isShareOpen}
         setIsShareOpen={setIsShareOpen}

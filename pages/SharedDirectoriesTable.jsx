@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { getAllSharedDirectories, revokeSharedDirectory } from '../API/share';
+import { Users, Share2, ArrowRight } from 'lucide-react';
+import { useSectionStore } from '@/store/sectionStore';
+
 import {
   FiFolder,
-  FiUsers,
   FiTrash2,
   FiShield,
   FiChevronDown,
@@ -48,7 +50,9 @@ export default function SharedDirectoriesList() {
   const [deletePopupOpen, setDeletePopupOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState({});
   const [selectedDirectory, setSelectedDirectory] = useState(null);
+  const setSection = useSectionStore((s) => s.setSection);
 
+  useEffect(() => setSection('shared'), []);
   async function fetchData() {
     try {
       const res = await getAllSharedDirectories();
@@ -82,29 +86,47 @@ export default function SharedDirectoriesList() {
   // --- Empty State ---
   if (data.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-white rounded-lg border-2 border-dashed border-slate-200 mt-6 group cursor-default hover:border-indigo-200 transition-colors duration-300">
-        <div className="bg-indigo-50 p-5 rounded-full mb-5 group-hover:scale-110 transition-transform duration-300">
-          <FiUsers className="w-8 h-8 text-indigo-500" />
+      <div className="relative w-full overflow-hidden  p-1 mt-6 ">
+        {/* Inner White Container */}
+        <div className="relative flex flex-col items-center justify-center  h-full rounded-[20px] py-16 px-6 overflow-hidden">
+          {/* Animated Background Elements */}
+          <div className="absolute top-0 left-0 w-64 h-64  -translate-x-1/2 -translate-y-1/2"></div>
+          <div className="absolute bottom-0 right-0 w-64 h-64 bg-pink-50 rounded-full mix-blend-multiply filter blur-3xl opacity-70 translate-x-1/2 translate-y-1/2"></div>
+
+          {/* Icon Interaction */}
+          <div className="relative mb-8">
+            <div className="absolute inset-0  rounded-full blur opacity-20 animate-pulse"></div>
+            <div className="relative bg-white p-6 rounded-full shadow-xl border border-indigo-50 flex items-center justify-center">
+              <Users className="w-10 h-10 text-pink-400" />
+
+              {/* Floating Badge */}
+              <div className="absolute -right-1 -top-1 bg-pink-400 text-white p-2 rounded-full shadow-lg rotate-12">
+                <Share2 className="w-4 h-4" />
+              </div>
+            </div>
+          </div>
+
+          {/* Typography */}
+          <h3 className="text-2xl font-extrabold text-gray-900 mb-3 text-center tracking-tight">
+            No Shared Folders Yet
+          </h3>
+          <p className="text-gray-500 text-center max-w-sm mb-8 leading-relaxed text-lg">
+            Collaboration starts here. Share your first directory to begin
+            working together with your team.
+          </p>
         </div>
-        <h3 className="text-xl font-bold text-slate-800">
-          No Shared Directories
-        </h3>
-        <p className="text-slate-500 mt-2 max-w-xs leading-relaxed">
-          Your collaborative space is empty. Start by sharing a directory to see
-          it here.
-        </p>
       </div>
     );
   }
 
   return (
-    <div className="bg-transparent mt-8 p-8">
+    <div className="bg-transparent p-8 ">
       <h2 className="text-2xl font-bold text-slate-800 px-1">Shared Access</h2>
 
       {data.map((dir) => (
         <div
           key={dir.directoryId}
-          className="group relative mt-3   bg-white rounded-lg border  shadow-sm  transition-all duration-500 overflow-hidden"
+          className="group relative mt-3   bg-white rounded-lg transition-all duration-500 overflow-hidden"
         >
           {/* --- Card Header (Visible Always) --- */}
           <div className="relative p-6 z-10 bg-white flex items-center justify-between cursor-pointer">
@@ -122,7 +144,13 @@ export default function SharedDirectoriesList() {
                   {dir.name}
                 </h3>
                 <p className="text-sm text-slate-500 font-medium mt-0.5 flex items-center gap-2">
-                  <span>Shared with {dir.sharedWith.length} members</span>
+                  <span>
+                    Shared with{' '}
+                    <span className="font-semibold text-gray-700">
+                      {dir.sharedWith.length}
+                    </span>{' '}
+                    members
+                  </span>
                 </p>
               </div>
             </div>

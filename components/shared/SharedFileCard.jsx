@@ -17,7 +17,7 @@ const SharedFileCard = ({ file, onDelete, onRename }) => {
     : 'bg-indigo-50 text-indigo-600 border border-indigo-200';
 
   return (
-    <div className="w-72 p-5 bg-white shadow-md rounded-2xl border border-slate-100 hover:shadow-lg transition-shadow">
+    <div className="w-full  p-5 bg-white shadow-md rounded-2xl border border-slate-100 hover:shadow-lg transition-shadow">
       {/* HEADER */}
       <div className="flex justify-between items-start">
         {/* Icon + Name */}
@@ -29,21 +29,12 @@ const SharedFileCard = ({ file, onDelete, onRename }) => {
           />
 
           <p className="font-semibold text-gray-800 text-sm leading-tight max-w-[140px]">
-            {shortenName(fileName, 26)}
+            {shortenName(fileName, 10)}
             <span className="block text-[11px] text-gray-400 font-medium mt-0.5">
               {extension}
             </span>
           </p>
         </div>
-
-        {/* Dropdown */}
-        <SharedFileDropDown
-          id={file._id}
-          role={file.sharedRole}
-          onDelete={onDelete}
-          onRename={onRename}
-          onShare={() => console.log('share again')}
-        />
       </div>
 
       {/* DATE */}
@@ -55,14 +46,24 @@ const SharedFileCard = ({ file, onDelete, onRename }) => {
       </p>
 
       {/* ROLE BADGE */}
-      {file.sharedRole && (
-        <div
-          className={`flex items-center gap-1.5 mt-4 px-3 py-1.5 rounded-full w-fit text-xs font-semibold ${roleBadgeStyle}`}
-        >
-          <RoleIcon size={12} />
-          <span className="capitalize">{file.sharedRole}</span>
-        </div>
-      )}
+      <div className="flex justify-between items-center">
+        {file.sharedRole && (
+          <div
+            className={`flex items-center gap-1.5 mt-4 px-3 py-1.5 rounded-full w-fit text-xs font-semibold ${roleBadgeStyle}`}
+          >
+            <RoleIcon size={12} />
+            <span className="capitalize">{file.sharedRole}</span>
+          </div>
+        )}
+        {/* Dropdown */}
+        <SharedFileDropDown
+          id={file._id}
+          role={file.sharedRole}
+          onDelete={onDelete}
+          onRename={onRename}
+          onShare={() => console.log('share again')}
+        />
+      </div>
     </div>
   );
 };

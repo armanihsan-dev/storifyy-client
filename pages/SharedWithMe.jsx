@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FiShare2, FiRefreshCw, FiInbox } from 'react-icons/fi';
 import toast from 'react-hot-toast';
+import { useSectionStore } from '@/store/sectionStore';
+
 import {
   deleteFile,
   getSharedDirectories,
@@ -18,6 +20,9 @@ const SharedWithMe = () => {
   const [files, setFiles] = useState([]);
   const [directories, setDirectories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const setSection = useSectionStore((s) => s.setSection);
+
+  useEffect(() => setSection('inbox'), []);
 
   // Fetch Data
   const fetchSharedData = async () => {
@@ -83,13 +88,7 @@ const SharedWithMe = () => {
   };
 
   return (
-    <div className="relative h-screen w-full overflow-hidden text-slate-800">
-      {/* --- BACKGROUND AMBIANCE (Glow Blobs) --- */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-        {/* <div className="absolute top-[-10%] left-[-5%] w-[500px] h-[500px] bg-rose-200/40 rounded-full blur-[100px] opacity-70" />
-        <div className="absolute  bottom-[10%] right-[-5%] w-[400px] h-[400px] bg-purple-200/40 rounded-full blur-[100px] opacity-70" /> */}
-      </div>
-
+    <div className="relative  w-full overflow-hidden text-slate-800 ">
       <div className="relative z-10 max-w-7xl mx-auto px-6 py-12">
         {/* --- HEADER SECTION --- */}
         <motion.div
@@ -102,11 +101,11 @@ const SharedWithMe = () => {
               <div className="p-3 bg-white rounded-full shadow-sm text-rose-500">
                 <FiShare2 size={24} />
               </div>
-              <h2 className="text-3xl font-bold tracking-tight text-slate-800">
+              <h2 className="text-xl lg:text-3xl font-bold tracking-tight text-slate-800">
                 Shared With Me
               </h2>
             </div>
-            <p className="text-slate-500 text-sm ml-1">
+            <p className="text-slate-500 text-[10px] lg:text-sm ml-1">
               Manage files that colleagues have shared with you.
             </p>
           </div>
@@ -172,6 +171,7 @@ const SharedWithMe = () => {
           >
             <AnimatePresence mode="popLayout">
               {/* Directories first */}
+
               {directories.map((dir) => (
                 <motion.div
                   key={dir._id}

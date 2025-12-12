@@ -3,7 +3,7 @@ import FileDropDown from './FileDropDown';
 
 const FileTile = ({ file, refreshFiles }) => {
   return (
-    <div className="w-full sm:w-52 group relative cursor-pointer p-4 border rounded-xl bg-white hover:bg-gray-50 shadow-sm hover:shadow-md transition-all">
+    <div className="w-full sm:w-50 group relative cursor-pointer p-4 border rounded-xl bg-white hover:bg-gray-50 shadow-sm hover:shadow-md transition-all">
       <File className="w-10 h-10 text-blue-500 group-hover:text-blue-600" />
 
       <p className="mt-2 text-sm font-medium text-gray-700 truncate">

@@ -1,26 +1,47 @@
-import { useState, useContext } from 'react';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { useState } from 'react';
+import { useSectionStore } from '../src/store/sectionStore';
+import {
+  useNavigate,
+  Link,
+  useLocation,
+  useParams,
+  Outlet,
+} from 'react-router-dom';
 import AuthDropDown from '../components/AuthDropDown';
-import { FiSearch, FiMenu, FiGrid, FiUsers } from 'react-icons/fi';
+import {
+  FiSearch,
+  FiMenu,
+  FiGrid,
+  FiUsers,
+  FiShare2,
+  FiStar,
+} from 'react-icons/fi';
 import { BsInbox } from 'react-icons/bs';
 import toast, { Toaster } from 'react-hot-toast';
-import CurrentUserContext from '../Context/CurrentUserContent';
 import FileUpload from '../components/FileUpload';
 import CreateDirectory from '../components/CreateDirectory';
-import { Outlet } from 'react-router-dom';
+import { formatFileSize } from '../utility/functions';
+import { useCurrentUser } from './hooks/otherHooks';
 
 const AppLayout = ({ children }) => {
   const BASE_URL = 'http://localhost:3000';
   const navigate = useNavigate();
   const location = useLocation();
+  const { dirId } = useParams();
 
-  const { currentUser } = useContext(CurrentUserContext);
+  // Fetch Current User from React Query
+  const { data: currentUser, isPending } = useCurrentUser();
+  const currentSection = useSectionStore((s) => s.currentSection);
 
+  const [shouldRefresh, setShouldRefresh] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [folderName, setFolderName] = useState('');
 
-  const SidebarItem = ({ icon: Icon, label, to }) => {
-    const active = location.pathname === to;
+  // Sidebar items
+  const SidebarItem = ({ icon: Icon, label, to, section }) => {
+    const currentSection = useSectionStore((s) => s.currentSection);
+
+    const active = currentSection === section;
 
     return (
       <Link to={to}>
@@ -38,25 +59,28 @@ const AppLayout = ({ children }) => {
     );
   };
 
-  const StorageWidget = () => (
-    <div className="mx-6 mt-6 p-6 rounded-lg bg-pink-400 text-white ">
-      <div className="flex items-center justify-between mb-4">
-        <div className="w-12 h-12 rounded-full border-4 border-white/30 flex items-center justify-center">
-          <span className="text-xs font-bold">65%</span>
-        </div>
-        <div className="text-right">
-          <p className="text-xs text-white/80 font-medium">Available Storage</p>
-          <p className="text-lg font-bold">
-            82GB <span className="text-xs opacity-70">/ 128GB</span>
-          </p>
-        </div>
-      </div>
+  // -------------------- DIRECTORY CREATION --------------------
+  async function handleCreateDirectory(e) {
+    e.preventDefault();
 
-      <div className="w-full bg-black/10 rounded-full h-1.5 mt-2">
-        <div className="bg-white h-1.5 rounded-full w-[65%]"></div>
-      </div>
-    </div>
-  );
+    const URL = `${BASE_URL}/directory/${dirId || ''}`;
+    const response = await fetch(URL, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { folderName },
+    });
+
+    const data = await response.json();
+    setFolderName('');
+
+    if (!response.ok) {
+      toast.error(data.error || 'Something went wrong');
+      return;
+    }
+
+    toast.success('Directory created!');
+    setShouldRefresh(true);
+  }
 
   return (
     <div className="flex h-screen bg-gray-50 font-[Poppins] overflow-hidden text-slate-800">
@@ -77,20 +101,47 @@ const AppLayout = ({ children }) => {
             Storifyy
           </span>
         </div>
-
-        {/* NAVIGATION */}
         <nav className="flex flex-col gap-1 py-4">
-          <SidebarItem icon={FiGrid} label="Dashboard" to="/" />
+          <SidebarItem
+            icon={FiGrid}
+            label="Dashboard"
+            to="/"
+            section="dashboard"
+          />
+
           {currentUser?.role === 'Admin' && (
-            <SidebarItem icon={FiUsers} label="Application Users" to="/users" />
+            <SidebarItem
+              icon={FiUsers}
+              label="Application Users"
+              to="/users"
+              section="users"
+            />
           )}
 
-          <SidebarItem icon={BsInbox} label="Inbox" to="/inbox" />
-          <SidebarItem icon={BsInbox} label="Shared" to="/shared" />
+          <SidebarItem
+            icon={BsInbox}
+            label="Inbox"
+            to="/inbox"
+            section="inbox"
+          />
+
+          <SidebarItem
+            icon={FiShare2}
+            label="Shared"
+            to="/shared"
+            section="shared"
+          />
+
+          <SidebarItem
+            icon={FiStar}
+            label="Starred"
+            to="/starred"
+            section="starred"
+          />
         </nav>
 
-        <div className="mt-auto pb-8">
-          <StorageWidget />
+        <div className="mt-auto p-6 flex items-center justify-center">
+          <img src="../public/Illustration.png" className="w-28" alt="" />
         </div>
       </aside>
 
@@ -102,9 +153,8 @@ const AppLayout = ({ children }) => {
         ></div>
       )}
 
-      {/* ------------------- MAIN AREA ------------------- */}
+      {/* ------------------- MAIN CONTENT ------------------- */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* ------------------- HEADER / TOPBAR ------------------- */}
         <header className="h-24 px-8 flex items-center justify-between bg-[#F3F4F8] shrink-0">
           <div className="flex items-center gap-4">
             <button
@@ -114,7 +164,7 @@ const AppLayout = ({ children }) => {
               <FiMenu className="w-6 h-6" />
             </button>
 
-            <div className="hidden md:flex items-center bg-white px-5 py-3 rounded-lg w-[400px] shadow-sm border border-slate-100 focus-within:ring-2 focus-within:ring-rose-100 transition-all">
+            <div className="hidden md:flex items-center bg-white px-5 py-3 rounded-3xl w-[400px] shadow-sm border border-slate-100">
               <FiSearch className="text-slate-400 mr-3 w-5 h-5" />
               <input
                 type="text"
@@ -125,11 +175,11 @@ const AppLayout = ({ children }) => {
           </div>
 
           <div className="flex items-center gap-6">
-            <FileUpload getDirectories={() => {}} />
+            <FileUpload setShouldRefresh={setShouldRefresh} />
             <CreateDirectory
               folderName={folderName}
               setfolderName={setFolderName}
-              handleCreateDirectory={() => {}}
+              handleCreateDirectory={handleCreateDirectory}
             />
             <div className="pl-4 border-l border-slate-300/50">
               <AuthDropDown BASEURL={BASE_URL} />
@@ -137,11 +187,11 @@ const AppLayout = ({ children }) => {
           </div>
         </header>
 
-        {/* ------------------- SCROLLABLE OUTLET AREA ------------------- */}
         <div className="flex-1 overflow-hidden">
-          <div className="h-full overflow-y-auto custom-scrollbar p-8 pt-0">
-            {/* Render nested pages here */}
-            {children || <Outlet />}
+          <div className="h-full overflow-y-auto custom-scrollbar pt-0">
+            {children || (
+              <Outlet context={{ shouldRefresh, setShouldRefresh }} />
+            )}
           </div>
         </div>
       </div>
