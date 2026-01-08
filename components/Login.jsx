@@ -72,7 +72,7 @@ const Login = () => {
         <div className="flex justify-start items-start">
           {/* Replace with actual illustration */}
           <img
-            src="../public/Illustration.png"
+            src="/Illustration.png"
             alt="folder illustration"
             className="w-64"
           />

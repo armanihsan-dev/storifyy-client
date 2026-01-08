@@ -1,313 +1,394 @@
 import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useQuery } from '@tanstack/react-query';
+import { fetchShareableUsers } from '../API/userAPI';
 import toast from 'react-hot-toast';
 import {
   FiX,
   FiMail,
   FiSend,
-  FiUsers,
   FiCheck,
-  FiLink,
   FiChevronDown,
   FiShield,
+  FiSearch,
+  FiTrash2,
 } from 'react-icons/fi';
 
-// --- Custom Styled Button ---
-const CustomButton = ({
-  children,
-  onClick,
-  variant = 'primary',
-  disabled,
-  className = '',
-}) => {
-  const baseStyle =
-    'px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 active:scale-95';
+// --- Components ---
 
-  const variants = {
-    primary:
-      'bg-gradient-to-r from-[#FF8585] to-[#FF6B6B] hover:from-[#FF6B6B] hover:to-[#F54E4E] text-white shadow-[0_10px_20px_-10px_rgba(255,107,107,0.5)] disabled:opacity-50 disabled:shadow-none',
-    outline:
-      'border-2 border-gray-100 hover:border-[#FF6B6B] hover:text-[#FF6B6B] text-gray-500 bg-white',
-    ghost: 'hover:bg-gray-100 text-gray-500 hover:text-gray-700',
-  };
+const Avatar = ({ src, name, size = 'md' }) => {
+  const sizeClasses = size === 'sm' ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm';
 
+  if (src) {
+    return (
+      <img
+        src={src}
+        alt={name}
+        className={`${sizeClasses} rounded-full object-cover ring-2 ring-white shadow-sm`}
+      />
+    );
+  }
   return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      className={`${baseStyle} ${variants[variant]} ${className} ${
-        disabled ? 'cursor-not-allowed' : ''
-      }`}
+    <div
+      className={`${sizeClasses} rounded-full bg-gradient-to-br from-rose-100 to-rose-200 text-rose-600 flex items-center justify-center font-bold ring-2 ring-white shadow-sm`}
     >
-      {children}
-    </button>
+      {name?.charAt(0).toUpperCase()}
+    </div>
   );
 };
 
+const RoleSelector = ({ value, onChange, disabled }) => (
+  <div className="relative group">
+    <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-rose-500">
+      <FiShield />
+    </div>
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      disabled={disabled}
+      className="appearance-none bg-rose-50 hover:bg-rose-100/80 border border-rose-100 text-rose-700 font-semibold text-sm rounded-xl py-2.5 pl-9 pr-8 focus:outline-none focus:ring-2 focus:ring-rose-500/20 cursor-pointer transition-colors"
+    >
+      <option value="viewer">Viewer</option>
+      <option value="editor">Editor</option>
+    </select>
+    <FiChevronDown
+      className="absolute right-3 top-1/2 -translate-y-1/2 text-rose-400 pointer-events-none"
+      size={14}
+    />
+  </div>
+);
+
 const SharePopup = ({ isOpen, onClose, fileId, BASE_URL }) => {
   const [email, setEmail] = useState('');
-  const [emailList, setEmailList] = useState([]);
+  const [selectedUsers, setSelectedUsers] = useState([]); // Array of objects { email, name, picture }
   const [loading, setLoading] = useState(false);
-  // NEW: Role State (Default to viewer)
   const [role, setRole] = useState('viewer');
-
   const inputRef = useRef(null);
 
-  // Focus input when opened
+  // Focus input on open
   useEffect(() => {
-    if (isOpen && inputRef.current) {
+    if (isOpen && inputRef.current)
       setTimeout(() => inputRef.current.focus(), 100);
-    }
   }, [isOpen]);
 
-  const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  // Fetch users based on input
+  const { data: users = [], isLoading: usersLoading } = useQuery({
+    queryKey: ['shareable-users', email],
+    queryFn: fetchShareableUsers,
+    enabled: isOpen && email.length > 0,
+    keepPreviousData: true,
+  });
 
-  const addEmail = () => {
+  // --- Logic ---
+
+  const handleAddEmail = () => {
     const trimmed = email.trim();
     if (!trimmed) return;
 
-    if (!isValidEmail(trimmed)) {
-      toast.error('Please enter a valid email');
+    // Basic validation
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      toast.error('Invalid email address');
       return;
     }
 
-    if (emailList.includes(trimmed)) {
-      toast.error('Email already added');
+    if (selectedUsers.some((u) => u.email === trimmed)) {
+      toast.error('User already added');
       setEmail('');
       return;
     }
 
-    setEmailList([...emailList, trimmed]);
+    // Add as a "Guest" user object
+    setSelectedUsers([
+      ...selectedUsers,
+      { email: trimmed, name: trimmed.split('@')[0], type: 'email' },
+    ]);
     setEmail('');
+  };
+
+  const handleAddUser = (user) => {
+    if (selectedUsers.some((u) => u.email === user.email)) return;
+    setSelectedUsers([...selectedUsers, { ...user, type: 'user' }]);
+    setEmail(''); // Clear search
+    inputRef.current?.focus();
+  };
+
+  const removeUser = (emailToRemove) => {
+    setSelectedUsers(selectedUsers.filter((u) => u.email !== emailToRemove));
   };
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      addEmail();
+      handleAddEmail();
     }
   };
 
-  const removeEmail = (emailToRemove) => {
-    setEmailList(emailList.filter((e) => e !== emailToRemove));
-  };
-
-  const sendEmails = async () => {
-    if (emailList.length === 0) return;
+  const handleShare = async () => {
+    if (selectedUsers.length === 0) return;
     setLoading(true);
+
+    console.log({ selectedUsers });
     try {
-      for (let em of emailList) {
-        // --- UPDATED API CALL ---
-        // Matches: router.post("/:email", ...)
-        // Email goes in URL, fileid and role go in Body
-        const res = await fetch(`${BASE_URL}/share/${em}`, {
+      // Process all users
+      const promises = selectedUsers.map((user) =>
+        fetch(`${BASE_URL}/share/${user.email}`, {
           method: 'POST',
-          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            fileid: fileId,
-            role: role, // Sending the selected role
-          }),
-        });
-
-        if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.error || 'Failed to share');
-        }
-      }
-
-      toast.custom(
-        <div className="bg-emerald-500 text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-3 font-medium">
-          <div className="bg-white/20 p-1 rounded-full">
-            <FiCheck />
-          </div>
-          <span>Shared successfully!</span>
-        </div>,
-        {
-          position: 'top-right',
-          duration: 2000,
-          unmount: false,
-        }
+          body: JSON.stringify({ fileid: fileId, role }),
+          credentials: 'include',
+        }).then(async (res) => {
+          if (!res.ok) throw new Error(await res.text());
+          return res;
+        })
       );
 
-      setTimeout(() => {
-        setEmailList([]);
-        onClose();
-      }, 500);
+      await Promise.all(promises);
+
+      toast.custom(
+        <div className="bg-emerald-600 text-white px-6 py-3 rounded-full shadow-xl flex items-center gap-3 font-medium animate-in slide-in-from-top-5">
+          <FiCheck size={18} /> Shared with {selectedUsers.length} people
+        </div>
+      );
+
+      onClose();
+      setSelectedUsers([]);
+      setRole('viewer');
     } catch (err) {
-      console.log(err);
-      toast.error(err.message || 'Error sharing!');
+      console.error(err);
+      toast.error('Some invitations failed to send');
     } finally {
       setLoading(false);
     }
   };
 
-  // --- DEFINE THE MODAL CONTENT ---
-  const modalContent = (
+  // --- Render Helpers ---
+
+  // Is the search input showing results?
+  const showResults = email.length > 0 && (users.length > 0 || usersLoading);
+
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 sm:p-6">
           {/* Backdrop */}
           <motion.div
-            className="fixed inset-0 bg-gray-900/20 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={!loading ? onClose : undefined}
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-md transition-all"
           />
 
-          {/* Card Container */}
+          {/* Main Card */}
           <motion.div
-            className="relative w-full max-w-[480px] z-[999999] bg-white rounded-lg shadow-2xl overflow-hidden border border-white"
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            transition={{ type: 'spring', duration: 0.5, bounce: 0.3 }}
+            className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden z-10 flex flex-col max-h-[85vh]"
           >
-            {/* Decorative Blurs */}
-            <div className="absolute -top-10 -left-10 w-40 h-40 bg-[#FF6B6B]/20 blur-[60px] rounded-full pointer-events-none" />
-            <div className="absolute top-0 right-0 w-32 h-32 bg-[#FF8585]/10 blur-[50px] rounded-full pointer-events-none" />
-
             {/* Header */}
-            <div className="relative p-8 pb-4 flex justify-between items-start z-10">
-              <div className="space-y-1">
-                <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                  Share File
-                </h2>
-                <p className="text-sm text-gray-400">
-                  Invite your team to collaborate.
+            <div className="p-6 pb-2 flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold text-slate-800">Share File</h2>
+                <p className="text-sm text-slate-500">
+                  Invite team members to collaborate
                 </p>
               </div>
-
               <button
                 onClick={onClose}
-                className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-full transition-all"
-                disabled={loading}
+                className="p-2 bg-slate-50 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors"
               >
-                <FiX size={22} />
+                <FiX size={20} />
               </button>
             </div>
 
-            {/* Body */}
-            <div className="p-8 pt-2 space-y-6 z-10 relative">
-              {/* Input Group */}
-              <div className="space-y-3">
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wider ml-1">
-                  Email Address
-                </label>
-                <div className="flex gap-3">
-                  <div className="relative flex-1 group">
-                    <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-[#FF6B6B] transition-colors">
-                      <FiMail size={18} />
-                    </div>
-                    <input
-                      ref={inputRef}
-                      type="email"
-                      placeholder="arman@company.com"
-                      className="w-full bg-gray-50 border-2 border-gray-100 hover:border-gray-200 rounded-xl py-3 pl-11 pr-4 text-gray-700 placeholder-gray-400 focus:outline-none focus:border-[#FF6B6B] focus:bg-white transition-all"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      onKeyDown={handleKeyDown}
-                      disabled={loading}
-                    />
+            {/* Content Area */}
+            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
+              {/* Input Section */}
+              <div className="relative z-20">
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-400 group-focus-within:text-rose-500 transition-colors">
+                    {usersLoading ? (
+                      <div className="w-4 h-4 border-2 border-rose-500 border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <FiSearch size={18} />
+                    )}
                   </div>
-                  <CustomButton
-                    variant="outline"
-                    onClick={addEmail}
-                    disabled={!email || loading}
-                    className="aspect-square px-0 w-[50px] flex items-center justify-center rounded-xl border-2"
-                  >
-                    +
-                  </CustomButton>
+                  <input
+                    ref={inputRef}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Search by name or email..."
+                    className="w-full pl-10 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all shadow-sm"
+                  />
+                  {email && (
+                    <button
+                      onClick={() => setEmail('')}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600"
+                    >
+                      <FiX size={14} />
+                    </button>
+                  )}
                 </div>
+
+                {/* Dropdown Results (Absolute) */}
+                <AnimatePresence>
+                  {showResults && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl border border-slate-100 shadow-xl overflow-hidden max-h-60 overflow-y-auto z-50 divide-y divide-slate-50"
+                    >
+                      {users.map((user) => {
+                        const isSelected = selectedUsers.some(
+                          (u) => u.email === user.email
+                        );
+                        return (
+                          <button
+                            key={user._id}
+                            onClick={() => handleAddUser(user)}
+                            disabled={isSelected}
+                            className={`w-full flex items-center gap-3 p-3 text-left transition-colors ${
+                              isSelected
+                                ? 'opacity-50 cursor-not-allowed bg-slate-50'
+                                : 'hover:bg-rose-50'
+                            }`}
+                          >
+                            <Avatar
+                              src={user.picture}
+                              name={user.name}
+                              size="sm"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-semibold text-slate-700 truncate">
+                                {user.name}
+                              </p>
+                              <p className="text-xs text-slate-500 truncate">
+                                {user.email}
+                              </p>
+                            </div>
+                            {isSelected && (
+                              <FiCheck className="text-rose-500" />
+                            )}
+                          </button>
+                        );
+                      })}
+                      {users.length === 0 && !usersLoading && (
+                        <div
+                          onClick={handleAddEmail}
+                          className="p-3 text-center cursor-pointer hover:bg-slate-50"
+                        >
+                          <p className="text-sm text-slate-600">
+                            Invite{' '}
+                            <span className="font-semibold text-rose-500">
+                              {email}
+                            </span>{' '}
+                            via email
+                          </p>
+                        </div>
+                      )}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
 
-              {/* Chips Container */}
-              <div className="bg-gray-50/50 rounded-2xl p-4 min-h-[120px] max-h-[200px] overflow-y-auto custom-scrollbar border border-gray-100">
-                <div className="flex justify-between items-end mb-3">
-                  <p className="text-xs font-semibold text-gray-400">
-                    PEOPLE WITH ACCESS ({emailList.length})
+              {/* Staged Users List (Pending Invites) */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                    Pending Invites ({selectedUsers.length})
                   </p>
-                  {emailList.length > 0 && (
+                  {selectedUsers.length > 0 && (
                     <button
-                      onClick={() => setEmailList([])}
-                      className="text-xs text-[#FF6B6B] font-medium hover:text-[#ff4747]"
+                      onClick={() => setSelectedUsers([])}
+                      className="text-xs text-rose-500 font-medium hover:underline"
                     >
                       Clear all
                     </button>
                   )}
                 </div>
 
-                {emailList.length === 0 ? (
-                  <div className="h-20 flex flex-col items-center justify-center text-gray-400/80 gap-2">
-                    <FiUsers size={24} className="opacity-50" />
-                    <span className="text-sm">No one added yet</span>
-                  </div>
-                ) : (
-                  <motion.div layout className="flex flex-wrap gap-2">
-                    <AnimatePresence mode="popLayout">
-                      {emailList.map((e) => (
+                <div className="space-y-2 min-h-[100px]">
+                  <AnimatePresence mode="popLayout">
+                    {selectedUsers.length === 0 ? (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="flex flex-col items-center justify-center py-8 text-slate-400 bg-slate-50/50 rounded-xl border border-dashed border-slate-200"
+                      >
+                        <FiMail size={24} className="mb-2 opacity-20" />
+                        <p className="text-sm">
+                          Search or type emails to invite people
+                        </p>
+                      </motion.div>
+                    ) : (
+                      selectedUsers.map((user) => (
                         <motion.div
                           layout
-                          key={e}
-                          initial={{ opacity: 0, scale: 0.8 }}
+                          key={user.email}
+                          initial={{ opacity: 0, scale: 0.9 }}
                           animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.5 }}
-                          className="group flex items-center gap-2 pl-3 pr-1 py-1.5 bg-white border border-gray-200 shadow-sm text-gray-600 rounded-full text-sm"
+                          exit={{ opacity: 0, scale: 0.9 }}
+                          className="group flex items-center justify-between p-2 rounded-xl border border-slate-100 bg-white shadow-sm hover:shadow-md hover:border-rose-100 transition-all"
                         >
-                          <span className="font-medium text-gray-700">{e}</span>
+                          <div className="flex items-center gap-3 overflow-hidden">
+                            <Avatar src={user.picture} name={user.name} />
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold text-slate-700 truncate">
+                                {user.name}
+                              </p>
+                              <p className="text-xs text-slate-400 truncate">
+                                {user.email}
+                              </p>
+                            </div>
+                          </div>
                           <button
-                            className="p-1 rounded-full hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
-                            onClick={() => removeEmail(e)}
-                            disabled={loading}
+                            onClick={() => removeUser(user.email)}
+                            className="p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
                           >
-                            <FiX size={14} />
+                            <FiTrash2 size={16} />
                           </button>
                         </motion.div>
-                      ))}
-                    </AnimatePresence>
-                  </motion.div>
-                )}
+                      ))
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
             </div>
 
             {/* Footer */}
-            <div className="relative p-8 pt-0 flex flex-col md:flex-row justify-between items-center gap-4">
-              {/* NEW: Role Selection Dropdown */}
-              <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 self-start md:self-auto">
-                <FiShield className="text-gray-400" />
-                <div className="relative">
-                  <select
-                    value={role}
-                    onChange={(e) => setRole(e.target.value)}
-                    className="appearance-none bg-transparent font-medium text-sm text-gray-700 pr-6 focus:outline-none cursor-pointer"
-                    disabled={loading}
-                  >
-                    <option value="viewer">Viewer</option>
-                    <option value="editor">Editor</option>
-                  </select>
-                  <FiChevronDown
-                    className="absolute right-0 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
-                    size={14}
-                  />
-                </div>
+            <div className="p-6 pt-4 border-t border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="w-full sm:w-auto">
+                <RoleSelector
+                  value={role}
+                  onChange={setRole}
+                  disabled={loading}
+                />
               </div>
 
-              <div className="flex gap-3 w-full md:w-auto justify-end">
-                <CustomButton
-                  variant="ghost"
+              <div className="flex gap-3 w-full sm:w-auto">
+                <button
                   onClick={onClose}
+                  className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl font-medium text-slate-500 hover:text-slate-700 hover:bg-white border border-transparent hover:border-slate-200 transition-all"
                   disabled={loading}
                 >
                   Cancel
-                </CustomButton>
-
-                <CustomButton
-                  variant="primary"
-                  onClick={sendEmails}
-                  disabled={emailList.length === 0 || loading}
-                  className="w-32 shadow-lg shadow-[#FF6B6B]/30"
+                </button>
+                <button
+                  onClick={handleShare}
+                  disabled={selectedUsers.length === 0 || loading}
+                  className={`
+                    flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-semibold text-white shadow-lg shadow-rose-500/30 transition-all
+                    ${
+                      selectedUsers.length === 0 || loading
+                        ? 'bg-slate-300 shadow-none cursor-not-allowed'
+                        : 'bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-400 hover:to-rose-500 active:scale-95'
+                    }
+                  `}
                 >
                   {loading ? (
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -317,16 +398,15 @@ const SharePopup = ({ isOpen, onClose, fileId, BASE_URL }) => {
                       <FiSend size={16} />
                     </>
                   )}
-                </CustomButton>
+                </button>
               </div>
             </div>
           </motion.div>
         </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
-
-  return createPortal(modalContent, document.body);
 };
 
 export default SharePopup;

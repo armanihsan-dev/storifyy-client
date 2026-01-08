@@ -38,6 +38,8 @@ export async function renameSharedFile(id, newName) {
 }
 
 export async function shareDirectoryByEmail(email, directoryId, role) {
+
+    console.log({ email, directoryId, role });
     try {
         const { data } = await axiosAPI.post(`/share/directory/${email}`, {
             directoryId,
@@ -47,7 +49,8 @@ export async function shareDirectoryByEmail(email, directoryId, role) {
         toast.success(data.message || "Directory shared successfully");
         return data;
     } catch (err) {
-        toast.error("Failed to share directory");
+        const server_error = err.response.data.error
+        toast.error(server_error || "Failed to share directory");
         console.error("Error sharing directory:", err);
         return null;
     }
@@ -103,3 +106,17 @@ export async function revokeSharedDirectory(dirId, email) {
     });
     return res.data;
 }
+
+
+export async function getFilesSharedByMe() {
+    const res = await axiosAPI.get('/share/getFilesSharedByMe')
+    return res.data
+}
+
+export const revokeSharedFile = async (fileId, email) => {
+    const res = await axiosAPI.delete('/share/revokeSharedFile', {
+        data: { fileId, email }, // DELETE needs data explicitly
+    });
+    return res.data;
+};
+

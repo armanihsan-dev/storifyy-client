@@ -9,12 +9,13 @@ import { CurrentUserProvider } from '../Context/CurrentUserContent';
 import Profile from '../components/Profile';
 import SharedWithMe from '../pages/SharedWithMe';
 import SharedDirectoryView from '../pages/SharedDirectoryView';
-import SharedDirectoriesList from '../pages/SharedDirectoriesTable';
+import SharedDirectoriesList from '../pages/SharedDirectoriesList';
 import DashboardPage from '../pages/DashboardPage';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import StarredPage from './../pages/StarredPage';
 import NotFoundPage from './../pages/NotPageFound';
-
+import Plans from './../pages/SubscriptionPage';
+import ManageSubscription from '../components/ManageSubscription';
 const router = createBrowserRouter([
   {
     path: '/',
@@ -37,6 +38,8 @@ const router = createBrowserRouter([
 
   // Auth routes must be OUTSIDE layout
   { path: '/login', element: <Login /> },
+  { path: '/plans', element: <Plans /> },
+  { path: '/manage-subscription', element: <ManageSubscription /> },
   { path: '/register', element: <RegisterForm /> },
   {
     path: '*',

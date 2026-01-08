@@ -31,6 +31,7 @@ import {
 } from 'react-icons/fi';
 import { Link, useNavigate } from 'react-router-dom';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
+import { Crown } from 'lucide-react';
 
 const AuthDropDown = ({ BASEURL }) => {
   const [userInfo, setUserInfo] = useState({
@@ -183,6 +184,31 @@ const AuthDropDown = ({ BASEURL }) => {
                 </DropdownMenuItem>
               </DropdownMenuGroup>
 
+              <DropdownMenuSeparator className="bg-slate-100 my-1" />
+
+              <DropdownMenuGroup>
+                <DropdownMenuLabel className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3 mt-2 mb-1">
+                  Subscription
+                </DropdownMenuLabel>
+
+                {/* Logout All Trigger */}
+                <Link
+                  to="/manage-subscription"
+                  className="w-full cursor-pointer"
+                >
+                  <DropdownMenuItem
+                    className={`${menuItemClass} !text-green-600 hover:!bg-green-50 hover:!text-green-700 focus:!bg-green-50 cursor-pointer`}
+                  >
+                    <Crown
+                      size={16}
+                      className="text-green-400 group-hover:text-green-600 transition-colors"
+                    />
+                    <div className="flex flex-col">
+                      <span className="leading-none">Manage subscription</span>
+                    </div>
+                  </DropdownMenuItem>
+                </Link>
+              </DropdownMenuGroup>
               <DropdownMenuSeparator className="bg-slate-100 my-1" />
 
               <DropdownMenuGroup>

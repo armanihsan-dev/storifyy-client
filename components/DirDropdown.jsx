@@ -276,10 +276,9 @@ const DirDropdown = ({ id, onDelete, onRename, details }) => {
       </AlertDialog>
 
       <ShareDirectoryDialog
-        isShareOpen={isShareOpen}
-        setIsShareOpen={setIsShareOpen}
-        id={id}
-        shareDirectoryByEmail={shareDirectoryByEmail}
+        open={isShareOpen}
+        onOpenChange={setIsShareOpen}
+        directoryId={id}
       />
     </>
   );

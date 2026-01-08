@@ -1,7 +1,9 @@
 import { QueryClient, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
 import { getCurrectUser } from "../../API/userAPI";
 import axiosAPI from "../../API/axsios";
+import { fetchMySubscription, generateInvoice } from "../../API/lemonSqueezy";
+import toast from "react-hot-toast";
+
 const formatUser = (data) => {
     const formattedDate = new Date(data.createdAt).toLocaleDateString("en-US", {
         month: "short",
@@ -77,3 +79,27 @@ export const useStarred = () =>
             return data;
         },
     });
+
+
+export const useMySubscription = () => {
+    return useQuery({
+        queryKey: ['my-current-subscription'],
+        queryFn: fetchMySubscription,
+        staleTime: 1000 * 60, // 1 min
+    });
+};
+
+
+export const useGenerateInvoice = () => {
+    return useMutation({
+        mutationFn: generateInvoice,
+        onSuccess: (url) => {
+            console.log(url);
+            window.open(url, '_blank');
+            toast.success('Invoice generated');
+        },
+        onError: () => {
+            toast.error('Failed to generate invoice');
+        },
+    });
+};

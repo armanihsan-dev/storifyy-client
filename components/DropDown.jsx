@@ -87,7 +87,7 @@ const FileActionsDropdown = ({
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 dark:bg-zinc-800 flex items-center justify-center overflow-hidden">
                 <img
-                  src={`/fileicons/${details.extension}.svg`}
+                  src={`/fileicons/${details.extension.split('.')[1]}.svg`}
                   className="w-12 h-12"
                 />
               </div>

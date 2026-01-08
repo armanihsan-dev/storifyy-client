@@ -22,6 +22,7 @@ import FileUpload from '../components/FileUpload';
 import CreateDirectory from '../components/CreateDirectory';
 import { formatFileSize } from '../utility/functions';
 import { useCurrentUser } from './hooks/otherHooks';
+import { MdSubscriptions, MdWorkspacePremium } from 'react-icons/md';
 
 const AppLayout = ({ children }) => {
   const BASE_URL = 'http://localhost:3000';
@@ -96,7 +97,7 @@ const AppLayout = ({ children }) => {
           className="h-24 flex items-center px-8 gap-2 cursor-pointer"
           onClick={() => navigate('/')}
         >
-          <img src="../public/logo.svg" alt="logo" className="w-8 lg:w-10" />
+          <img src="/logo.svg" alt="logo" className="w-8 lg:w-10" />
           <span className="text-xl lg:text-2xl font-bold text-pink-400 tracking-tight">
             Storifyy
           </span>
@@ -141,7 +142,7 @@ const AppLayout = ({ children }) => {
         </nav>
 
         <div className="mt-auto p-6 flex items-center justify-center">
-          <img src="../public/Illustration.png" className="w-28" alt="" />
+          <img src="/Illustration.png" className="w-28" alt="" />
         </div>
       </aside>
 
@@ -175,12 +176,23 @@ const AppLayout = ({ children }) => {
           </div>
 
           <div className="flex items-center gap-6">
-            <FileUpload setShouldRefresh={setShouldRefresh} />
-            <CreateDirectory
-              folderName={folderName}
-              setfolderName={setFolderName}
-              handleCreateDirectory={handleCreateDirectory}
-            />
+            <button
+              onClick={() => navigate('/plans')}
+              className="flex items-center gap-2 cursor-pointer  px-4 py-3 rounded-3xl bg-pink-400 text-white hover:shadow-sm transition"
+            >
+              <MdWorkspacePremium size={20} />
+              <span className="text-sm font-medium">Upgrade Plan</span>
+            </button>
+            <div className="flex gap-4">
+              <FileUpload setShouldRefresh={setShouldRefresh} />
+
+              <CreateDirectory
+                folderName={folderName}
+                setfolderName={setFolderName}
+                handleCreateDirectory={handleCreateDirectory}
+              />
+            </div>
+
             <div className="pl-4 border-l border-slate-300/50">
               <AuthDropDown BASEURL={BASE_URL} />
             </div>

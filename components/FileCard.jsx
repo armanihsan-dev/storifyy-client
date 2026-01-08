@@ -9,10 +9,17 @@ export function shortenName(text, max = 22) {
   return text.length <= max ? text : text.slice(0, max) + '...';
 }
 
-const FileCard = ({ id, title, sizeLabel, updatedAt, refetch, path }) => {
-  const extension = title.split('.').pop().toLowerCase();
+const FileCard = ({
+  id,
+  title,
+  sizeLabel,
+  updatedAt,
+  refetch,
+  path,
+  extension,
+}) => {
   const baseName = title.replace(/\.[^/.]+$/, '');
-  const iconPath = `/fileicons/${extension}.svg`;
+  const iconPath = `/fileicons/${extension.split('.')[1]}.svg`;
   const fileSize = formatFileSize(sizeLabel || 0);
   const BASE_URL = 'http://localhost:3000';
   const [isRenaming, setIsRenaming] = useState(false);

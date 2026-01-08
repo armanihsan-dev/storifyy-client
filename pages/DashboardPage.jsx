@@ -29,6 +29,10 @@ const DashboardPage = () => {
 
   // 🔥 React Query handles everything here
   const { data, isLoading, isError, error, refetch } = useDirectory(dirId);
+  if (error == 'Not logged!') {
+    window.location.href = '/login';
+  }
+
   const { data: breadcrumb, isLoading: bcLoading } = useBreadcrumb(dirId);
   const breadcrumbPath = breadcrumb
     ? breadcrumb
@@ -214,6 +218,7 @@ const DashboardPage = () => {
                       key={file._id}
                       id={file._id}
                       title={file.name}
+                      extension={file.extension}
                       sizeLabel={file.size || 'Unknown'}
                       path={breadcrumbPath}
                       updatedAt={new Date(file.updatedAt).toLocaleString()}

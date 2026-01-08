@@ -9,7 +9,7 @@ export async function logoutFromAllAccounts() {
     } catch (err) {
         console.log(err);
     }
-}   
+}
 
 // GET CURRENT USER
 export async function getCurrectUser() {
@@ -102,3 +102,17 @@ export async function getUserInfo(userid) {
         console.log("Error fetching user info", err);
     }
 }
+
+export const fetchShareableUsers = async ({ queryKey }) => {
+    const [, search] = queryKey
+
+    const res = await axiosAPI.get('/user/shareable', {
+        params: {
+            q: search || '',
+            limit: 10,
+        },
+    })
+
+    return res.data.users
+}
+

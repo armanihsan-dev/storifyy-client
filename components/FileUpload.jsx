@@ -1,59 +1,83 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { FaCloudUploadAlt } from 'react-icons/fa';
 import { useParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { ClipLoader } from 'react-spinners';
+
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { useCurrentUser } from '@/hooks/otherHooks';
+
+import { useMySubscription, useCurrentUser } from '@/hooks/otherHooks';
 import { formatFileSize } from '../utility/functions';
+import { uploadComplete, uploadInitiate } from '../API/FileAPI';
 
 const FileUpload = ({ setShouldRefresh }) => {
-  const BASE_URL = 'http://localhost:3000';
+  const { dirId: parentDirId } = useParams();
 
-  const params = useParams();
+  const { data: subscription } = useMySubscription();
+  const { data: user } = useCurrentUser();
+  if (!user) return null;
+  const remainingStorage = (user.maxStorage ?? 0) - (user.usedStorage ?? 0);
 
-  const parentDirId = params.dirId;
-  const { data } = useCurrentUser();
+  // 🚨 Only PAUSED is a hard stop
+  const isPaused = subscription?.status === 'paused';
+  const iscancelled = subscription?.status === 'cancelled';
+  const canUpload =
+    !isPaused &&
+    remainingStorage > 0 &&
+    user.maxUploadBytes > 0 &&
+    !iscancelled;
 
   async function handleFileChange(e) {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+    if (isPaused) {
+      toast.error('Your subscription is paused. Resume it to upload files.');
+      return;
+    }
 
-    // ⬅️ NEW: Calculate available storage
-    const availableSpace = data?.maxStorage - data?.usedStorage;
-
-    for (let file of files) {
-      // ⬅️ NEW: 100MB limit check
-      if (file.size > MAX_FILE_SIZE) {
-        toast.error(`File size exceeds the 100MB limit.`);
+    for (const file of files) {
+      // 🔒 Max upload size check (plan-based)
+      if (file.size > user.maxUploadBytes) {
+        toast.error(
+          `Max upload size is ${formatFileSize(user.maxUploadBytes)}`
+        );
         continue;
       }
 
-      // ⬅️ NEW: Storage capacity check
-      if (file.size > availableSpace) {
-        toast.error(
-          `Not enough space! Only ${formatFileSize(availableSpace)} left.`
-        );
-        continue; // skip this file
+      // 🔒 Storage check
+      if (file.size > remainingStorage) {
+        toast.error(`Only ${formatFileSize(remainingStorage)} storage left`);
+        continue;
       }
 
-      await uploadSingleFile(file);
+      try {
+        const { uploadSignedURL, fileID } = await uploadInitiate({
+          name: file.name,
+          size: file.size,
+          contentType: file.type,
+          parentDirId,
+        });
+
+        await uploadSingleFile({ file, uploadSignedURL, fileID });
+      } catch (err) {
+        console.error(err);
+        toast.error(`❌ Failed to upload ${file.name}`);
+      }
     }
 
     setShouldRefresh(true);
   }
 
-  function uploadSingleFile(file) {
+  function uploadSingleFile({ file, uploadSignedURL, fileID }) {
     return new Promise((resolve) => {
       const uploadToast = toast(
         <div className="flex items-center space-x-3">
-          <ClipLoader size={20} color="#fff" />
+          <ClipLoader size={18} />
           <span>Uploading {file.name}...</span>
         </div>,
         {
@@ -63,42 +87,37 @@ const FileUpload = ({ setShouldRefresh }) => {
       );
 
       const xhr = new XMLHttpRequest();
-      xhr.open('POST', `${BASE_URL}/file/${parentDirId || ''}`, true);
-      xhr.setRequestHeader('filename', file.name);
-      xhr.setRequestHeader('filesize', file.size);
-      xhr.withCredentials = true;
+      xhr.open('PUT', uploadSignedURL, true);
 
-      xhr.upload.addEventListener('progress', (e) => {
-        const percentage = ((e.loaded / e.total) * 100).toFixed(0);
+      xhr.upload.onprogress = (e) => {
+        const percent = ((e.loaded / e.total) * 100).toFixed(0);
 
         toast(
-          <div className="flex flex-col items-start space-y-2">
-            <div className="flex items-center space-x-2">
-              <ClipLoader size={18} color="#fff" />
-              <span>{percentage}% uploaded</span>
-            </div>
+          <div className="flex flex-col gap-2">
+            <span>{percent}% uploaded</span>
             <div className="w-40 bg-gray-300 rounded-full h-2">
               <div
                 className="bg-pink-400 h-2 rounded-full"
-                style={{ width: `${percentage}%` }}
+                style={{ width: `${percent}%` }}
               />
             </div>
           </div>,
-          {
-            id: uploadToast,
-            style: { background: 'white', color: 'black' },
-            position: 'top-center',
-          }
+          { id: uploadToast }
         );
-      });
+      };
 
-      xhr.onload = () => {
-        toast.success(`${file.name} uploaded!`, { id: uploadToast });
+      xhr.onload = async () => {
+        if (xhr.status === 200) {
+          await uploadComplete(fileID);
+          toast.success(`${file.name} uploaded!`, { id: uploadToast });
+        } else {
+          toast.error(`❌ Upload failed`, { id: uploadToast });
+        }
         resolve();
       };
 
       xhr.onerror = () => {
-        toast.error(`❌ Failed to upload ${file.name}`, { id: uploadToast });
+        toast.error(`❌ Upload failed`, { id: uploadToast });
         resolve();
       };
 
@@ -107,18 +126,37 @@ const FileUpload = ({ setShouldRefresh }) => {
   }
 
   return (
-    <div className="flex flex-col items-start justify-center w-full">
+    <div className="flex items-center">
       <Tooltip>
         <TooltipTrigger asChild>
           <label
             htmlFor="file-upload"
-            className="cursor-pointer bg-pink-400 text-white rounded-full py-3 px-4 flex items-center space-x-2"
+            className={`rounded-full py-3 px-4 flex items-center
+              ${
+                canUpload
+                  ? 'cursor-pointer bg-pink-400 text-white'
+                  : 'cursor-not-allowed bg-gray-300 text-gray-500'
+              }`}
+            onClick={() => {
+              if (isPaused) {
+                toast.error('Your subscription is paused. Resume to upload.');
+              } else if (remainingStorage <= 0) {
+                toast.error('You have used all your storage.');
+              }
+            }}
           >
             <FaCloudUploadAlt size={20} />
           </label>
         </TooltipTrigger>
-        <TooltipContent side="top" align="center">
-          <p>Upload Files</p>
+
+        <TooltipContent>
+          {isPaused
+            ? 'Uploads paused — resume your subscription'
+            : subscription?.status === 'expired'
+            ? 'Free plan active — limited uploads'
+            : subscription?.status === 'cancelled'
+            ? 'Activate your plan to start uploading'
+            : 'Upload files'}
         </TooltipContent>
       </Tooltip>
 

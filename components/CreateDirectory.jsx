@@ -23,7 +23,7 @@ const CreateDirectory = ({
   return (
     <>
       {/* Trigger Button */}
-      <div className="border bg-pink-400 flex items-center gap-2 text-white font-medium rounded-full px-3">
+      <div className="border bg-pink-400 flex  items-center gap-2 text-white font-medium rounded-full px-3">
         <Tooltip>
           <TooltipTrigger asChild>
             <button

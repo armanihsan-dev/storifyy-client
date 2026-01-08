@@ -17,7 +17,7 @@ const SharedFileCard = ({ file, onDelete, onRename }) => {
     : 'bg-indigo-50 text-indigo-600 border border-indigo-200';
 
   return (
-    <div className="w-full  p-5 bg-white shadow-md rounded-2xl border border-slate-100 hover:shadow-lg transition-shadow">
+    <div className="w-full   p-5 bg-white shadow-md rounded-2xl border border-slate-100 hover:shadow-lg transition-shadow">
       {/* HEADER */}
       <div className="flex justify-between items-start">
         {/* Icon + Name */}
@@ -36,25 +36,31 @@ const SharedFileCard = ({ file, onDelete, onRename }) => {
           </p>
         </div>
       </div>
-
       {/* DATE */}
-      <p className="text-xs text-gray-400 mt-4">
-        Shared on:{' '}
-        <span className="text-gray-600 font-medium">
-          {new Date(file.sharedAt).toLocaleDateString()}
-        </span>
-      </p>
-
+      {file.sharedAt ? (
+        <p className="text-xs text-gray-400 mt-4">
+          Shared on:
+          <span className="text-gray-600 font-medium ml-1">
+            {new Date(file.sharedAt).toLocaleDateString()}
+          </span>
+        </p>
+      ) : (
+        <p className="text-xs text-gray-400 mt-4">
+          Shared on:
+          <span className="text-gray-600 font-medium ml-1">
+            {new Date(file.updatedAt).toLocaleDateString()}
+          </span>
+        </p>
+      )}
       {/* ROLE BADGE */}
-      <div className="flex justify-between items-center">
-        {file.sharedRole && (
-          <div
-            className={`flex items-center gap-1.5 mt-4 px-3 py-1.5 rounded-full w-fit text-xs font-semibold ${roleBadgeStyle}`}
-          >
-            <RoleIcon size={12} />
-            <span className="capitalize">{file.sharedRole}</span>
-          </div>
-        )}
+      <div className="flex justify-between items-center mt-2 ">
+        <div
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full w-fit text-xs font-semibold ${roleBadgeStyle}`}
+        >
+          <RoleIcon size={12} />
+          <span className="capitalize">{file?.sharedRole || 'Viewer'}</span>
+        </div>
+
         {/* Dropdown */}
         <SharedFileDropDown
           id={file._id}

@@ -254,7 +254,7 @@ const RegisterForm = () => {
 
         <div className="flex justify-start items-start">
           <img
-            src="../public/Illustration.png"
+            src="/Illustration.png"
             alt="folder illustration"
             className="w-64"
           />

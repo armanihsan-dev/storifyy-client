@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import ModalPortal from '../../components/ModalPortal';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Folder,
@@ -14,10 +15,12 @@ import {
 } from 'lucide-react';
 import { deletesharedirectory, renameSharedDirectory } from '../../API/share'; // Assuming this exists
 import toast from 'react-hot-toast';
+import { truncateText } from '../../pages/SharedDirectoriesList';
 // import { renameSharedDirectory } from '../../API/share'; // You would import your rename API here
 
 const SharedDirectoryCard = ({ directory, onDelete }) => {
   const navigate = useNavigate();
+  console.log(directory);
 
   // State for Delete
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -98,16 +101,19 @@ const SharedDirectoryCard = ({ directory, onDelete }) => {
             {/* Title */}
             <div className="flex flex-col flex-grow">
               <h3 className="text-[1.05rem] font-semibold text-slate-800 truncate">
-                {directory.name}
+                {truncateText(directory.name, 9)}
               </h3>
-              <p className="text-xs text-slate-400 flex items-center gap-1 mt-1">
-                <Clock size={12} />
-                {new Date(directory.sharedAt).toLocaleDateString(undefined, {
-                  year: 'numeric',
-                  month: 'short',
-                  day: 'numeric',
-                })}
-              </p>
+              {directory.sharedAt ? (
+                <p className="text-xs text-slate-400 flex items-center gap-1 mt-1">
+                  <Clock size={12} />
+                  {new Date(directory.sharedAt).toLocaleDateString()}
+                </p>
+              ) : (
+                <p className="text-xs text-slate-400 flex items-center gap-1 mt-1">
+                  <Clock size={12} />
+                  {new Date(directory.updatedAt).toLocaleDateString()}
+                </p>
+              )}
             </div>
           </div>
 
@@ -129,88 +135,91 @@ const SharedDirectoryCard = ({ directory, onDelete }) => {
       {/* --- RENAME POPUP --- */}
       <AnimatePresence>
         {renameOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setRenameOpen(false)}
-              className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
-            />
+          <ModalPortal>
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setRenameOpen(false)}
+                className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+              />
 
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              transition={{ type: 'spring', duration: 0.5 }}
-              className="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden"
-            >
-              <div className="p-6">
-                <div className="text-center mb-6">
-                  <div className="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <FileEdit className="text-indigo-500" size={32} />
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                transition={{ type: 'spring', duration: 0.5 }}
+                className="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden"
+              >
+                <div className="p-6">
+                  <div className="text-center mb-6">
+                    <div className="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <FileEdit className="text-indigo-500" size={32} />
+                    </div>
+                    <h2 className="text-xl font-bold text-slate-800">
+                      Rename Directory
+                    </h2>
+                    <p className="text-slate-500 text-sm mt-1">
+                      Enter a new name for your shared folder.
+                    </p>
                   </div>
-                  <h2 className="text-xl font-bold text-slate-800">
-                    Rename Directory
-                  </h2>
-                  <p className="text-slate-500 text-sm mt-1">
-                    Enter a new name for your shared folder.
-                  </p>
-                </div>
 
-                {/* Input Field */}
-                <div className="mb-6">
-                  <input
-                    type="text"
-                    value={newName}
-                    onChange={(e) => setNewName(e.target.value)}
-                    autoFocus
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 font-medium  placeholder:text-slate-400"
-                    placeholder="Folder Name"
-                  />
-                </div>
+                  {/* Input Field */}
+                  <div className="mb-6">
+                    <input
+                      type="text"
+                      value={newName}
+                      onChange={(e) => setNewName(e.target.value)}
+                      autoFocus
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 font-medium  placeholder:text-slate-400"
+                      placeholder="Folder Name"
+                    />
+                  </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <button
-                    onClick={() => setRenameOpen(false)}
-                    className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-medium hover:bg-slate-50 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={async () => {
-                      const isRenamed = await renameSharedDirectory(
-                        directory._id,
-                        newName
-                      );
-                      if (isRenamed) {
-                        setRenameOpen(false);
-                        window.location.reload();
-                        toast.success('Directory Renamed.');
-                      }
-                    }}
-                    disabled={isRenaming || !newName.trim()}
-                    className="px-4 py-2.5 rounded-xl bg-pink-400 text-white font-medium  shadow-lg shadow-indigo-500/30 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-                  >
-                    {isRenaming ? (
-                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    ) : (
-                      <>
-                        <Save size={18} /> Save
-                      </>
-                    )}
-                  </button>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={() => setRenameOpen(false)}
+                      className="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-medium hover:bg-slate-50 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={async () => {
+                        const isRenamed = await renameSharedDirectory(
+                          directory._id,
+                          newName
+                        );
+                        if (isRenamed) {
+                          setRenameOpen(false);
+                          window.location.reload();
+                          toast.success('Directory Renamed.');
+                        }
+                      }}
+                      disabled={isRenaming || !newName.trim()}
+                      className="px-4 py-2.5 rounded-xl bg-pink-400 text-white font-medium  shadow-lg shadow-indigo-500/30 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                    >
+                      {isRenaming ? (
+                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <>
+                          <Save size={18} /> Save
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          </div>
+              </motion.div>
+            </div>
+          </ModalPortal>
         )}
       </AnimatePresence>
 
       {/* --- DELETE POPUP (Existing) --- */}
       <AnimatePresence>
         {confirmOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+         <ModalPortal>
+           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -264,6 +273,7 @@ const SharedDirectoryCard = ({ directory, onDelete }) => {
               </button>
             </motion.div>
           </div>
+         </ModalPortal>
         )}
       </AnimatePresence>
     </>
