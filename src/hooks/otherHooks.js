@@ -103,3 +103,22 @@ export const useGenerateInvoice = () => {
         },
     });
 };
+
+
+
+export function useSearch(query, parendDirId) {
+    return useQuery({
+        queryKey: ["search", query],
+        enabled: typeof query === "string" && query.trim().length > 0,
+        queryFn: async () => {
+            const { data } = await axiosAPI.get("/search", {
+                params: { q: query, parendDirId },
+                withCredentials: true,
+            });
+
+            return data;
+        },
+        staleTime: 30_000,
+    });
+}
+

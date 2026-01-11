@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSectionStore } from '../src/store/sectionStore';
 import {
   useNavigate,
@@ -20,9 +20,9 @@ import { BsInbox } from 'react-icons/bs';
 import toast, { Toaster } from 'react-hot-toast';
 import FileUpload from '../components/FileUpload';
 import CreateDirectory from '../components/CreateDirectory';
-import { formatFileSize } from '../utility/functions';
-import { useCurrentUser } from './hooks/otherHooks';
-import { MdSubscriptions, MdWorkspacePremium } from 'react-icons/md';
+import { useCurrentUser, useSearch } from './hooks/otherHooks';
+import { MdWorkspacePremium } from 'react-icons/md';
+import GoogleDrivePicker from '../components/GoogleDrivePicker';
 
 const AppLayout = ({ children }) => {
   const BASE_URL = 'http://localhost:3000';
@@ -30,8 +30,25 @@ const AppLayout = ({ children }) => {
   const location = useLocation();
   const { dirId } = useParams();
 
+  function useDebounce(value, delay = 400) {
+    const [debounced, setDebounced] = useState(value);
+
+    useEffect(() => {
+      const t = setTimeout(() => setDebounced(value), delay);
+      return () => clearTimeout(t);
+    }, [value]);
+
+    return debounced;
+  }
+
+  const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search);
+
+  const { data, isLoading } = useSearch(debouncedSearch, dirId);
+
   // Fetch Current User from React Query
   const { data: currentUser, isPending } = useCurrentUser();
+
   const currentSection = useSectionStore((s) => s.currentSection);
 
   const [shouldRefresh, setShouldRefresh] = useState(false);
@@ -170,19 +187,15 @@ const AppLayout = ({ children }) => {
               <input
                 type="text"
                 placeholder="Search files..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
                 className="bg-transparent border-none outline-none w-full text-sm font-medium text-slate-700 placeholder:text-slate-400"
               />
             </div>
           </div>
 
           <div className="flex items-center gap-6">
-            <button
-              onClick={() => navigate('/plans')}
-              className="flex items-center gap-2 cursor-pointer  px-4 py-3 rounded-3xl bg-pink-400 text-white hover:shadow-sm transition"
-            >
-              <MdWorkspacePremium size={20} />
-              <span className="text-sm font-medium">Upgrade Plan</span>
-            </button>
+            <GoogleDrivePicker />
             <div className="flex gap-4">
               <FileUpload setShouldRefresh={setShouldRefresh} />
 
@@ -192,7 +205,6 @@ const AppLayout = ({ children }) => {
                 handleCreateDirectory={handleCreateDirectory}
               />
             </div>
-
             <div className="pl-4 border-l border-slate-300/50">
               <AuthDropDown BASEURL={BASE_URL} />
             </div>
@@ -202,7 +214,15 @@ const AppLayout = ({ children }) => {
         <div className="flex-1 overflow-hidden">
           <div className="h-full overflow-y-auto custom-scrollbar pt-0">
             {children || (
-              <Outlet context={{ shouldRefresh, setShouldRefresh }} />
+              <Outlet
+                context={{
+                  shouldRefresh,
+                  setShouldRefresh,
+                  searchQuery: debouncedSearch,
+                  searchResult: data,
+                  isSearching: !!debouncedSearch,
+                }}
+              />
             )}
           </div>
         </div>

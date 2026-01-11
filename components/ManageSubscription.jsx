@@ -3,8 +3,11 @@ import {
   Check,
   Crown,
   Sparkles,
+  CheckCircle2,
   Download,
   PauseCircle,
+  ShieldCheck,
+  CreditCard,
   PlayCircle,
   XCircle,
   Calendar,
@@ -15,9 +18,6 @@ import {
   AlertCircle,
   RotateCcw,
   RefreshCw,
-  MapPin,
-  Building2,
-  Globe,
   FileText,
   X,
 } from 'lucide-react';
@@ -136,22 +136,24 @@ const InvoiceModal = ({ isOpen, onClose, onSubmit, isLoading }) => {
         {/* Scrollable Content Area */}
         <div className="overflow-y-auto custom-scrollbar">
           {/* Header */}
-          <div className="bg-slate-900 p-6 text-white relative shrink-0">
+          <div className="bg-pink-100 p-6 text-white relative shrink-0">
             <button
               onClick={onClose}
               disabled={isLoading}
-              className="absolute top-5 right-5 text-slate-400 hover:text-white hover:bg-white/10 p-2 rounded-full transition-colors"
+              className="absolute top-5 right-5 text-slate-400 hover:texts hover:bg-white/10 p-2 rounded-full transition-colors"
             >
               <X size={18} />
             </button>
 
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-pink-500 rounded-xl flex items-center justify-center shadow-lg shadow-pink-500/30">
-                <FileText size={20} className="text-white" />
+              <div className="w-10 h-10 bg-pink-500 rounded-full flex items-center justify-center shadow-lg shadow-pink-500/30">
+                <FileText size={25} className="text-white" />
               </div>
               <div>
-                <h3 className="text-xl font-bold">Billing Details</h3>
-                <p className="text-slate-400 text-xs mt-0.5">
+                <h3 className="text-xl font-bold text-pink-400">
+                  Billing Details
+                </h3>
+                <p className="text-pink-600 text-xs mt-0.5">
                   Enter details to generate your invoice.
                 </p>
               </div>
@@ -259,7 +261,7 @@ const InvoiceModal = ({ isOpen, onClose, onSubmit, isLoading }) => {
             <button
               onClick={handleSubmit}
               disabled={isLoading}
-              className="w-full py-3.5 bg-slate-900 text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-slate-800 active:scale-[0.98] transition-all disabled:opacity-70 disabled:cursor-not-allowed shadow-xl shadow-slate-900/10"
+              className="w-full py-3.5 bg-pink-400 text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:shadow-sm active:scale-[0.98] transition-all disabled:opacity-70 disabled:cursor-not-allowed shadow-xl shadow-slate-900/10"
             >
               {isLoading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -289,72 +291,111 @@ const ActionModal = ({
 }) => {
   if (!isOpen) return null;
 
-  const colors = {
+  // Configuration for different modal types
+  const themes = {
     danger: {
-      bg: 'bg-red-50',
-      icon: 'text-red-600',
-      button: 'bg-red-600 hover:bg-red-700',
+      ring: 'bg-red-50',
+      iconBg: 'bg-red-100',
+      iconColor: 'text-red-600',
+      btn: 'bg-gradient-to-r from-red-500 to-rose-600 hover:to-rose-700 shadow-red-500/30',
+      iconDefault: AlertTriangle,
     },
     warning: {
-      bg: 'bg-amber-50',
-      icon: 'text-amber-600',
-      button: 'bg-amber-600 hover:bg-amber-700',
+      ring: 'bg-amber-50',
+      iconBg: 'bg-amber-100',
+      iconColor: 'text-amber-600',
+      btn: 'bg-gradient-to-r from-amber-500 to-orange-500 hover:to-orange-600 shadow-amber-500/30',
+      iconDefault: AlertTriangle,
     },
     success: {
-      bg: 'bg-emerald-50',
-      icon: 'text-emerald-600',
-      button: 'bg-emerald-600 hover:bg-emerald-700',
+      ring: 'bg-emerald-50',
+      iconBg: 'bg-emerald-100',
+      iconColor: 'text-emerald-600',
+      btn: 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:to-teal-700 shadow-emerald-500/30',
+      iconDefault: CheckCircle2,
     },
     neutral: {
-      bg: 'bg-slate-50',
-      icon: 'text-slate-600',
-      button: 'bg-slate-800 hover:bg-slate-900',
+      ring: 'bg-slate-50',
+      iconBg: 'bg-slate-100',
+      iconColor: 'text-slate-600',
+      btn: 'bg-gradient-to-r from-slate-700 to-slate-900 hover:to-black shadow-slate-500/30',
+      iconDefault: RotateCcw,
     },
   };
 
-  const theme = colors[type] || colors.danger;
-
-  let IconToRender = AlertTriangle;
-  if (IconOverride) {
-    IconToRender = IconOverride;
-  } else if (type === 'success' || type === 'neutral') {
-    IconToRender = RotateCcw;
-  }
+  const theme = themes[type] || themes.danger;
+  const IconToRender = IconOverride || theme.iconDefault;
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+      {/* Backdrop with Blur & Fade In */}
       <div
-        className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity"
+        className="absolute inset-0 bg-slate-900/60 backdrop-blur-md transition-opacity duration-300 animate-in fade-in"
         onClick={isLoading ? null : onClose}
       />
-      <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform transition-all scale-100">
-        <div
-          className={`w-12 h-12 rounded-full ${theme.bg} flex items-center justify-center mb-4`}
+
+      {/* Modal Container with Zoom In Animation */}
+      <div className="relative bg-white rounded-3xl shadow-xl max-w-md w-full p-6 md:p-8 transform transition-all animate-in zoom-in-95 duration-200 border border-slate-100">
+        {/* Close "X" Button (Top Right) */}
+        <button
+          onClick={onClose}
+          disabled={isLoading}
+          className="absolute top-4 right-4 p-2 text-slate-300 hover:text-slate-500 hover:bg-slate-50 rounded-full transition-colors"
         >
-          <IconToRender className={`w-6 h-6 ${theme.icon}`} />
-        </div>
+          <X size={20} />
+        </button>
 
-        <h3 className="text-lg font-bold text-slate-900 mb-2">{title}</h3>
-        <p className="text-slate-500 text-sm mb-6 leading-relaxed">
-          {description}
-        </p>
+        {/* Centered Content */}
+        <div className="flex flex-col items-center text-center">
+          {/* Animated Icon Container */}
+          <div
+            className={`mb-6 p-3 rounded-full ${theme.ring} animate-in zoom-in duration-300 delay-100`}
+          >
+            <div
+              className={`w-16 h-16 rounded-full ${theme.iconBg} flex items-center justify-center shadow-sm`}
+            >
+              <IconToRender
+                className={`w-8 h-8 ${theme.iconColor}`}
+                strokeWidth={2.5}
+              />
+            </div>
+          </div>
 
-        <div className="flex gap-3 justify-end">
-          <button
-            onClick={onClose}
-            disabled={isLoading}
-            className="px-4 py-2 text-slate-600 text-sm font-semibold hover:bg-slate-50 rounded-lg transition-colors"
-          >
-            Close
-          </button>
-          <button
-            onClick={onConfirm}
-            disabled={isLoading}
-            className={`px-4 py-2 text-white text-sm font-semibold rounded-lg shadow-md transition-all flex items-center gap-2 ${theme.button}`}
-          >
-            {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-            {confirmText}
-          </button>
+          <h3 className="text-xl font-extrabold text-slate-900 mb-2 tracking-tight">
+            {title}
+          </h3>
+
+          <p className="text-slate-500 text-sm leading-relaxed mb-8 max-w-full">
+            {description}
+          </p>
+
+          {/* Action Buttons Grid */}
+          <div className="grid grid-cols-2 gap-3 w-full">
+            <button
+              onClick={onClose}
+              disabled={isLoading}
+              className="px-4 py-3.5 text-slate-600 text-sm font-bold bg-white border border-slate-200 rounded-xl hover:bg-slate-50 hover:border-slate-300 transition-all active:scale-[0.98]"
+            >
+              Cancel
+            </button>
+
+            <button
+              onClick={onConfirm}
+              disabled={isLoading}
+              className={`
+                px-4 py-3.5 text-white text-sm font-bold rounded-xl shadow-lg 
+                flex items-center justify-center gap-2 transition-all active:scale-[0.98]
+                disabled:opacity-70 disabled:cursor-not-allowed
+                ${theme.btn}
+              `}
+            >
+              {isLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                confirmText
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -364,156 +405,114 @@ const ActionModal = ({
 const ManageSubscription = () => {
   const queryClient = useQueryClient();
 
-  // 1️⃣ OPTIMISTIC STATE: Track what action is currently waiting for the webhook
-  const [pendingAction, setPendingAction] = useState(null);
-  // pendingAction = 'cancel' | 'pause' | 'unpause' | 'revoke' | null
-
-  // 2️⃣ SMART POLLING: Refetch every 1s ONLY if we are waiting for an update
-  const { data: subscription, isLoading: isSubLoading } = useMySubscription({
-    refetchInterval: pendingAction ? 1000 : false, // 👈 Polling Magic
-  });
-
+  // Optimistic UI State
+  const [pendingAction, setPendingAction] = useState(null); // 'cancel' | 'pause' | 'unpause' | 'revoke'
   const [modalType, setModalType] = useState(null);
   const [invoiceOpen, setInvoiceOpen] = useState(false);
+
+  // Poll aggressively if we have a pending action to catch the webhook update ASAP
+  const { data: subscription, isLoading: isSubLoading } = useMySubscription({
+    refetchInterval: pendingAction ? 1000 : false,
+  });
+
   const invoiceMutation = useGenerateInvoice({
     onSuccess: (data) => {
       if (data?.invoiceUrl) {
         window.open(data.invoiceUrl, '_blank');
-        toast.success('Invoice generated successfully');
-      } else {
-        toast.error('Invoice generated but no URL returned');
-      }
+        toast.success('Invoice ready!');
+      } else toast.error('Invoice generated but URL missing.');
     },
-    onError: (err) => {
-      toast.error(err?.response?.data?.error || 'Failed to generate invoice');
-    },
+    onError: (err) =>
+      toast.error(err?.response?.data?.error || 'Failed to generate invoice'),
   });
 
-  // Helper to invalidate
-  const invalidateSubscription = () => {
-    queryClient.invalidateQueries({ queryKey: ['my-current-subscription'] });
-  };
-
-  // --- 3️⃣ WATCHER EFFECT ---
-  // Automatically clear the "Pending" banner when the DB actually updates
+  // Watcher: Clear "Pending" state when data actually updates
   useEffect(() => {
     if (!subscription || !pendingAction) return;
+    const { status } = subscription;
 
-    const status = subscription.status;
-
-    // Logic: If the DB status matches our desired state, stop the spinner
-    if (pendingAction === 'pause' && status === 'paused') {
+    if (pendingAction === 'pause' && status === 'paused')
       setPendingAction(null);
-      toast.success('System updated: Subscription is now paused.');
-    }
-    if (pendingAction === 'unpause' && status === 'active') {
+    if (pendingAction === 'unpause' && status === 'active')
       setPendingAction(null);
-      toast.success('System updated: Subscription is active.');
-    }
-    // Cancel is tricky because it might go to 'active' (grace period) or 'cancelled'
-    // We check if cancelAtPeriodEnd flag became true OR status is cancelled
+    if (pendingAction === 'revoke' && status === 'active')
+      setPendingAction(null);
     if (
       pendingAction === 'cancel' &&
       (status === 'cancelled' || subscription.renewsAt === null)
-    ) {
+    )
       setPendingAction(null);
-      toast.success('System updated: Cancellation confirmed.');
-    }
-    if (
-      pendingAction === 'revoke' &&
-      status === 'active' &&
-      subscription.renewsAt
-    ) {
-      setPendingAction(null);
-      toast.success('System updated: Plan renewed.');
-    }
   }, [subscription, pendingAction]);
 
-  // --- REACT QUERY MUTATIONS ---
+  // 🐞 5. Defensive fix: Guard against state race conditions on clicks
+  const safeSetModal = (type) => {
+    if (pendingAction) return;
+    setModalType(type);
+  };
 
-  // 1. Cancel
+  // --- Helper to handle "Zero Wait" Logic ---
+  const handleMutationStart = (actionName) => {
+    setModalType(null); // 1. Close modal IMMEDIATELY
+    setPendingAction(actionName); // 2. Show non-blocking loading banner
+
+    // 🐞 8. Fix: Use a toast ID to prevent stacking multiple loading toasts
+    toast.loading(`Processing ${actionName}...`, {
+      duration: 2000,
+      id: 'subscription-action',
+    });
+  };
+
+  const handleError = () => {
+    setPendingAction(null);
+    toast.error('Something went wrong. Please try again.');
+  };
+
   const cancelMut = useMutation({
     mutationFn: cancelSubscription,
-    onMutate: () => setPendingAction('cancel'), // Set flag immediately
-    onSuccess: () => {
-      setModalType(null);
-      invalidateSubscription();
-    },
-    onError: () => {
-      setPendingAction(null); // Reset on API failure
-      toast.error('Failed to cancel subscription.');
-    },
+    onMutate: () => handleMutationStart('cancel'),
+    onSuccess: () => queryClient.invalidateQueries(['my-current-subscription']),
+    onError: handleError,
   });
 
-  // 2. Pause
   const pauseMut = useMutation({
     mutationFn: pauseSubscription,
-    onMutate: () => setPendingAction('pause'),
-    onSuccess: () => {
-      setModalType(null);
-      invalidateSubscription();
-    },
-    onError: (error) => {
-      setPendingAction(null);
-      toast.error(
-        error?.response?.data?.error || 'Failed to pause subscription'
-      );
-    },
+    onMutate: () => handleMutationStart('pause'),
+    onSuccess: () => queryClient.invalidateQueries(['my-current-subscription']),
+    onError: handleError,
   });
 
-  // 3. Unpause
   const unpauseMut = useMutation({
     mutationFn: unpauseSubscription,
-    onMutate: () => setPendingAction('unpause'),
-    onSuccess: () => {
-      setModalType(null);
-      invalidateSubscription();
-    },
-    onError: () => {
-      setPendingAction(null);
-      toast.error('Failed to unpause subscription');
-    },
+    onMutate: () => handleMutationStart('unpause'),
+    onSuccess: () => queryClient.invalidateQueries(['my-current-subscription']),
+    onError: handleError,
   });
 
-  // 4. Revoke
   const revokeMut = useMutation({
     mutationFn: resumeSubscription,
-    onMutate: () => setPendingAction('revoke'),
-    onSuccess: () => {
-      setModalType(null);
-      invalidateSubscription();
-    },
-    onError: () => {
-      setPendingAction(null);
-      toast.error('Failed to revoke cancellation.');
-    },
+    onMutate: () => handleMutationStart('revoke'),
+    onSuccess: () => queryClient.invalidateQueries(['my-current-subscription']),
+    onError: handleError,
   });
 
-  // Check if API call is in flight (for button loaders)
-  const isApiLoading =
-    cancelMut.isPending ||
-    pauseMut.isPending ||
-    unpauseMut.isPending ||
-    revokeMut.isPending;
-
-  // --- STATE DERIVATION LOGIC ---
+  // --- Derived State ---
   const currentPlanDetails = useMemo(() => {
     if (!subscription) return null;
-    const allPlans = [...monthlyPlans, ...yearlyPlans];
     return (
-      allPlans.find((p) => p.lsId === subscription.variantId) || monthlyPlans[0]
+      [...monthlyPlans, ...yearlyPlans].find(
+        (p) => p.lsId === subscription.variantId
+      ) || monthlyPlans[0]
     );
   }, [subscription]);
 
-  const isGracePeriod = useMemo(() => {
-    if (!subscription) return false;
-    if (subscription.isGracePeriod) return true;
-    return (
-      subscription.status === 'cancelled' &&
-      subscription.renewsAt &&
-      new Date(subscription.renewsAt) > new Date()
-    );
-  }, [subscription]);
+  // 🐞 1. Fix: Unified source of truth for cancellation state to prevent UI overlap
+  const isCancelled =
+    subscription?.status === 'cancelled' &&
+    subscription?.renewsAt &&
+    new Date(subscription.renewsAt) > new Date();
+
+  // Grace period is now strictly synonymous with cancellation state
+  const isGracePeriod = isCancelled;
 
   const isExpired = subscription?.status === 'expired';
 
@@ -526,510 +525,430 @@ const ManageSubscription = () => {
   const isActive = subscription?.status === 'active';
   const isPaused = subscription?.status === 'paused';
 
-  // --- HANDLERS ---
-  const handleDownloadInvoice = () => {
-    console.log('handling download invoice');
-    setInvoiceOpen(true);
-  };
-  const submitInvoice = (form) => {
-    invoiceMutation.mutate({
-      variantId: subscription.variantId,
-      ...form,
-    });
-    setInvoiceOpen(false);
-  };
-
-  const handlePortalRedirect = () => {
-    if (isPaused) {
-      toast.error('Portal unavailable while paused.');
-      return;
-    }
-    if (subscription?.customerPortalUrl) {
-      window.location.href = subscription.customerPortalUrl;
-    } else {
-      toast.error('Customer portal is not available.');
-    }
-  };
-
-  // Handlers
-  const handleCancelSubscription = () => cancelMut.mutate();
-  const handlePauseSubscription = () => pauseMut.mutate();
-  const handleUnpauseSubscription = () => unpauseMut.mutate();
-  const handleRevokeCancellation = () => revokeMut.mutate();
-
-  // --- UI HELPERS ---
-  if (isSubLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="w-10 h-10 border-4 border-pink-400 border-t-transparent rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
   const PlanIcon = currentPlanDetails?.icon || Sparkles;
 
-  // Status Badge Logic
-  let statusBadgeClass = 'text-slate-600 bg-slate-100 border-slate-200';
-  let statusText = 'Free';
-  let cardBorderClass = 'border-slate-200';
-  let cardShadowClass = 'shadow-xl';
-
-  if (isActive) {
-    statusBadgeClass = 'text-emerald-600 bg-emerald-50 border-emerald-200';
-    statusText = 'Active';
-  } else if (isPaused) {
-    statusBadgeClass = 'text-amber-600 bg-amber-50 border-amber-200';
-    statusText = 'Paused';
-  } else if (isGracePeriod) {
-    statusBadgeClass = 'text-orange-600 bg-orange-50 border-orange-200';
-    statusText = `Ends ${new Date(subscription.renewsAt).toLocaleDateString()}`;
-    cardBorderClass = 'border-orange-300';
-    cardShadowClass = 'shadow-2xl shadow-orange-100';
-  } else if (isExpired) {
-    statusBadgeClass = 'text-red-600 bg-red-50 border-red-200';
-    statusText = 'Expired';
+  if (isSubLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-10 h-10 text-pink-500 animate-spin" />
+          <p className="text-slate-500 font-medium">Loading subscription...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
     <>
       <Header />
 
-      {/* --- MODALS --- */}
+      {/* --- Action Modals --- */}
       <ActionModal
         isOpen={modalType === 'cancel'}
         onClose={() => setModalType(null)}
         title="Cancel Subscription?"
-        description="Are you sure you want to cancel? You will keep access until the end of your billing period, but it will not auto-renew."
+        description="Are you sure? You will retain access until the end of your current billing period, but your plan will not auto-renew. No further charges will be applied."
         confirmText="Yes, Cancel Plan"
-        onConfirm={handleCancelSubscription}
+        onConfirm={() => cancelMut.mutate()}
         type="danger"
-        modalIcon={AlertTriangle}
-        isLoading={isApiLoading}
-      />
-      <InvoiceModal
-        isOpen={invoiceOpen}
-        onClose={() => setInvoiceOpen(false)}
-        onSubmit={submitInvoice}
-        isLoading={invoiceMutation.isPending}
-      />
-
-      <ActionModal
-        isOpen={modalType === 'unpause'}
-        onClose={() => setModalType(null)}
-        title="Unpause Subscription"
-        description="This will immediately restore your subscription and billing cycle."
-        confirmText="Unpause Now"
-        onConfirm={handleUnpauseSubscription}
-        type="success"
-        modalIcon={PlayCircle}
-        isLoading={isApiLoading}
+        modalIcon={XCircle}
       />
 
       <ActionModal
         isOpen={modalType === 'pause'}
         onClose={() => setModalType(null)}
-        title="Pause Subscription"
-        description="Need a break? You can pause your subscription. Your data will be kept safe, and you won't be billed until you unpause."
+        title="Pause Subscription?"
+        description="Need a break? This stops future payments while keeping your account data safe. You won't be charged again until you manually resume."
         confirmText="Pause Subscription"
-        onConfirm={handlePauseSubscription}
+        onConfirm={() => pauseMut.mutate()}
         type="warning"
         modalIcon={PauseCircle}
-        isLoading={isApiLoading}
+      />
+
+      <ActionModal
+        isOpen={modalType === 'unpause'}
+        onClose={() => setModalType(null)}
+        title="Resume Subscription?"
+        description="Ready to continue? This will immediately reactivate your subscription and billing cycle. You will regain full access to all premium features instantly."
+        confirmText="Resume Now"
+        onConfirm={() => unpauseMut.mutate()}
+        type="success"
+        modalIcon={PlayCircle}
       />
 
       <ActionModal
         isOpen={modalType === 'revoke'}
         onClose={() => setModalType(null)}
-        title="Revoke Cancellation?"
-        description="This will remove the cancellation request. Your subscription will renew automatically at the end of the period."
+        title="Keep Subscription?"
+        description="Changed your mind? This removes the scheduled cancellation. Your plan will continue without interruption and auto-renew on the next billing date."
         confirmText="Keep My Plan"
-        onConfirm={handleRevokeCancellation}
+        onConfirm={() => revokeMut.mutate()}
         type="neutral"
         modalIcon={RotateCcw}
-        isLoading={isApiLoading}
       />
 
-      <div className="relative min-h-screen bg-slate-50 font-[Poppins] py-24 px-4 sm:px-6 lg:px-8 overflow-x-hidden">
-        {/* Background Blobs */}
-        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-          <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
-          <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+      <InvoiceModal
+        isOpen={invoiceOpen}
+        onClose={() => setInvoiceOpen(false)}
+        onSubmit={(f) => {
+          setInvoiceOpen(false);
+          invoiceMutation.mutate({ variantId: subscription.variantId, ...f });
+        }}
+        isLoading={invoiceMutation.isPending}
+        // Note for Bug 6: Ensure InvoiceModal internals use 'hover:text-white' not 'hover:texts'
+      />
+
+      {/* 🐞 7. Fix: Use explicit padding to account for fixed header (pt-20) instead of magic py-28 */}
+      <div className="relative min-h-screen bg-slate-50 font-[Poppins] pt-20 pb-12 px-4 sm:px-6 lg:px-8 overflow-hidden">
+        {/* Animated Background Mesh */}
+        <div className="absolute inset-0 z-0">
+          <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-purple-200/40 rounded-full mix-blend-multiply filter blur-[128px] animate-blob" />
+          <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-pink-200/40 rounded-full mix-blend-multiply filter blur-[128px] animate-blob animation-delay-2000" />
+          <div className="absolute bottom-[-20%] left-[20%] w-[600px] h-[600px] bg-indigo-200/40 rounded-full mix-blend-multiply filter blur-[128px] animate-blob animation-delay-4000" />
         </div>
 
-        <div className="relative max-w-4xl mx-auto z-10">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-slate-900">
-              Manage Subscription
+        <div className="relative max-w-5xl mx-auto z-10">
+          {/* Header Text */}
+          <div className="mb-10 text-center md:text-left">
+            <h1 className="text-4xl font-extrabold text-slate-900 tracking-tight">
+              Your Subscription
             </h1>
-            <p className="text-slate-500 mt-2">
-              View details and manage your billing preferences.
+            <p className="text-slate-500 mt-2 text-lg">
+              Manage your plan, billing details, and invoices.
             </p>
           </div>
 
-          {/* 🚀 OPTIMISTIC UI BANNER 🚀 */}
+          {/* PROCESSING BANNER (Optimistic UI) */}
           {pendingAction && (
-            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-4 shadow-sm">
-              <RefreshCw className="w-5 h-5 text-blue-600 animate-spin" />
-              <div>
-                <h4 className="text-sm font-bold text-blue-800">
-                  Updating Subscription...
-                </h4>
-                <p className="text-sm text-blue-600">
-                  We are processing your request with the payment provider. This
-                  may take a few seconds.
-                </p>
+            <div className="mb-8 p-4 bg-white/80 backdrop-blur-md border border-indigo-100 rounded-2xl shadow-lg shadow-indigo-500/10 flex items-center justify-between animate-in slide-in-from-top-4 duration-500">
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 bg-indigo-50 rounded-full flex items-center justify-center">
+                  <RefreshCw className="w-5 h-5 text-indigo-600 animate-spin" />
+                </div>
+                <div>
+                  <h4 className="text-sm font-bold text-slate-900">
+                    Updating Subscription...
+                  </h4>
+                  <p className="text-xs text-slate-500">
+                    Communicating with payment provider. Changes will reflect
+                    shortly.
+                  </p>
+                </div>
               </div>
             </div>
           )}
 
-          {/* MAIN CARD */}
-          <div
-            className={`bg-white rounded-[2rem] overflow-hidden border transition-all duration-300 ${cardBorderClass} ${cardShadowClass}`}
-          >
-            {/* Top Section */}
-            <div
-              className={`p-8 md:p-10 border-b border-slate-100 ${
-                isGracePeriod
-                  ? 'bg-orange-50/30'
-                  : 'bg-gradient-to-br from-white to-slate-50/50'
-              }`}
-            >
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                <div className="flex items-center gap-5">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+            {/* --- LEFT COLUMN: MAIN CARD --- */}
+            <div className="lg:col-span-2 space-y-6">
+              <div className="bg-white/70 backdrop-blur-xl rounded-[2.5rem] border border-white/50 shadow-[0_8px_30px_rgb(0,0,0,0.04)] overflow-hidden">
+                {/* Card Header */}
+                <div className="p-8 md:p-10 border-b border-slate-100/50 relative overflow-hidden">
                   <div
-                    className={`p-4 rounded-full shadow-sm ${
+                    className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${
                       currentPlanDetails?.name === 'Premium'
-                        ? 'bg-pink-100 text-pink-600'
-                        : 'bg-blue-100 text-blue-600'
-                    }`}
-                  >
-                    <PlanIcon className="w-8 h-8" strokeWidth={1.5} />
-                  </div>
-                  <div>
-                    <div className="flex flex-wrap items-center gap-3 mb-1">
-                      <h2 className="text-2xl font-bold text-slate-900">
-                        {currentPlanDetails?.name} Plan
-                      </h2>
-                      <span
-                        className={`px-3 py-1 rounded-full text-xs font-bold border ${statusBadgeClass}`}
-                      >
-                        {statusText}
-                      </span>
-                    </div>
-                    <p className="text-slate-500 font-medium">
-                      ${currentPlanDetails?.price}/
-                      {currentPlanDetails?.billingCycle === 'Year'
-                        ? 'year'
-                        : 'month'}
-                    </p>
-                  </div>
-                </div>
+                        ? 'from-pink-500/10 to-transparent'
+                        : 'from-blue-500/10 to-transparent'
+                    } rounded-bl-full`}
+                  />
 
-                {/* Date Display */}
-                {!isFree && !isExpired && (
-                  <div className="flex flex-col items-end">
-                    <p className="text-sm text-slate-400 font-medium mb-1">
-                      {isGracePeriod ? 'Access Ends On' : 'Next Billing Date'}
-                    </p>
-                    <div
-                      className={`flex items-center gap-2 font-semibold bg-white px-4 py-2 rounded-xl border shadow-sm ${
-                        isGracePeriod
-                          ? 'border-orange-200 text-orange-700'
-                          : 'border-slate-200 text-slate-700'
-                      }`}
-                    >
-                      <Calendar
-                        className={`w-4 h-4 ${
-                          isGracePeriod ? 'text-orange-500' : 'text-pink-500'
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
+                    <div className="flex items-center gap-6">
+                      <div
+                        className={`w-20 h-20 rounded-full flex items-center justify-center shadow-lg shadow-slate-200 ${
+                          currentPlanDetails?.name === 'Premium'
+                            ? 'bg-gradient-to-br from-pink-500 to-rose-600 text-white'
+                            : 'bg-gradient-to-br from-blue-500 to-indigo-600 text-white'
                         }`}
-                      />
-                      {subscription?.renewsAt
-                        ? new Date(subscription.renewsAt).toLocaleDateString()
-                        : 'N/A'}
+                      >
+                        <PlanIcon className="w-10 h-10" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-3 mb-1">
+                          <h2 className="text-3xl font-bold text-slate-900">
+                            {currentPlanDetails?.name}
+                          </h2>
+                          {isActive && (
+                            <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold border border-emerald-200">
+                              Active
+                            </span>
+                          )}
+                          {isPaused && (
+                            <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-bold border border-amber-200">
+                              Paused
+                            </span>
+                          )}
+                          {isGracePeriod && (
+                            <span className="px-3 py-1 rounded-full bg-orange-100 text-orange-700 text-xs font-bold border border-orange-200">
+                              Cancelled
+                            </span>
+                          )}
+                          {isExpired && (
+                            <span className="px-3 py-1 rounded-full bg-red-100 text-red-700 text-xs font-bold border border-red-200">
+                              Expired
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-slate-500 text-lg font-medium">
+                          ${currentPlanDetails?.price}/
+                          {currentPlanDetails?.billingCycle === 'Year'
+                            ? 'year'
+                            : 'month'}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                )}
-              </div>
-            </div>
+                </div>
 
-            {/* Middle Section: Features */}
-            {!isExpired && (
-              <div className="px-8 py-6 bg-slate-50/50 border-b border-slate-100">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="flex items-center gap-3 text-sm text-slate-600">
-                    <Check className="w-4 h-4 text-green-500" />
-                    <span>{currentPlanDetails?.features[0]}</span>
-                  </div>
-                  <div className="flex items-center gap-3 text-sm text-slate-600">
-                    <Check className="w-4 h-4 text-green-500" />
-                    <span>{currentPlanDetails?.features[1]}</span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Bottom Section: Actions */}
-            <div className="p-8 md:p-10">
-              {/* --- BRANCH 1: FREE PLAN --- */}
-              {isFree ? (
-                <div className="flex flex-col items-center justify-center text-center py-6">
-                  <div className="w-16 h-16 bg-gradient-to-br from-pink-400 to-purple-500 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-pink-200">
-                    <Crown className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-slate-900 mb-2">
-                    Unlock Full Potential
-                  </h3>
-                  <Link
-                    to="/plans"
-                    className="group relative inline-flex items-center justify-center px-8 py-3.5 mt-4 text-base font-bold text-white transition-all duration-200 bg-slate-900 rounded-full hover:bg-slate-800"
-                  >
-                    Upgrade Now
-                  </Link>
-                </div>
-              ) : isExpired ? (
-                /* --- BRANCH 2: EXPIRED --- */
-                <div className="flex flex-col items-center justify-center text-center py-6">
-                  <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-6">
-                    <XCircle className="w-8 h-8 text-red-500" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-slate-900 mb-2">
-                    Subscription Expired
-                  </h3>
-                  <Link
-                    to="/plans"
-                    className="group relative inline-flex items-center justify-center px-8 py-3.5 mt-4 text-base font-bold text-white transition-all duration-200 bg-emerald-600 rounded-full hover:bg-emerald-700"
-                  >
-                    Renew Subscription
-                  </Link>
-                </div>
-              ) : (
-                /* --- BRANCH 3: SUBSCRIPTION MANAGEMENT --- */
-                <>
-                  {/* Grace Period Banner */}
+                {/* Card Body */}
+                <div className="p-8 md:p-10 bg-slate-50/50">
+                  {/* Grace Period / Paused Alert Banners */}
                   {isGracePeriod && (
-                    <div className="mb-8 p-4 bg-orange-50 border border-orange-100 rounded-xl flex items-start gap-3">
-                      <AlertCircle className="w-5 h-5 text-orange-600 shrink-0 mt-0.5" />
+                    <div className="mb-6 p-5 bg-orange-50 border border-orange-100 rounded-2xl flex items-start gap-4">
+                      <Clock className="w-6 h-6 text-orange-500 shrink-0 mt-0.5" />
                       <div>
-                        <h4 className="text-sm font-bold text-orange-800 mb-1">
-                          Subscription Cancelled
+                        <h4 className="font-bold text-orange-900">
+                          Access ending soon
                         </h4>
-                        <p className="text-sm text-orange-700 leading-relaxed">
-                          You’ll keep access until{' '}
+                        <p className="text-sm text-orange-700/80 mt-1">
+                          Your access remains valid until{' '}
                           <strong>
                             {new Date(
                               subscription.renewsAt
                             ).toLocaleDateString()}
                           </strong>
-                          . Revoke cancellation anytime to continue.
+                          .
                         </p>
                       </div>
+                      <button
+                        onClick={() => safeSetModal('revoke')}
+                        disabled={pendingAction !== null}
+                        className="ml-auto text-sm font-bold bg-orange-100 px-3 py-2 rounded-xl hover:bg-orange-200 transition hover:shadow-sm text-orange-600 hover:text-orange-800 disabled:opacity-50"
+                      >
+                        Activate Now
+                      </button>
                     </div>
                   )}
 
-                  {/* Paused Banner */}
                   {isPaused && (
-                    <div className="mb-8 p-4 bg-amber-50 border border-amber-100 rounded-xl flex items-start gap-3">
-                      <PauseCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                    <div className="mb-6 p-5 bg-amber-50 border border-amber-100 rounded-2xl flex items-start gap-4">
+                      <PauseCircle className="w-6 h-6 text-amber-500 shrink-0 mt-0.5" />
                       <div>
-                        <h4 className="text-sm font-bold text-amber-800 mb-1">
-                          Billing is Paused
+                        <h4 className="font-bold text-amber-900">
+                          Subscription Paused
                         </h4>
-                        <p className="text-sm text-amber-700 leading-relaxed">
-                          You won’t be charged until you unpause. Full access
-                          will be restored immediately upon unpausing.
+                        <p className="text-sm text-amber-700/80 mt-1">
+                          Payments are stopped. Resume anytime to regain full
+                          access.
                         </p>
                       </div>
                     </div>
                   )}
 
-                  <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-6">
-                    Subscription Actions
-                  </h3>
+                  {/* Feature List */}
+                  {/* 🐞 4. Fix: Hide features when cancelled to align mental model */}
+                  {!isExpired && !isCancelled && (
+                    <div className="space-y-4 mb-8">
+                      <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                        Plan Features
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {currentPlanDetails?.features
+                          ?.slice(0, 4)
+                          .map((feature, i) => (
+                            <div
+                              key={i}
+                              className="flex items-center gap-3 text-slate-700 bg-white p-3 rounded-xl border border-slate-100 shadow-sm"
+                            >
+                              <div className="w-6 h-6 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+                                <Check
+                                  className="w-3.5 h-3.5 text-green-600"
+                                  strokeWidth={3}
+                                />
+                              </div>
+                              <span className="text-sm font-medium">
+                                {feature}
+                              </span>
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  )}
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* 1. Download Invoice */}
-                    <button
-                      onClick={() => {
-                        handleDownloadInvoice();
-                      }}
-                      // disabled={
-                      //   invoiceMutation.isPending ||
-                      //   !subscription?.order_id ||
-                      //   pendingAction !== null
-                      // }
-                      className={`group flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-pink-300 hover:bg-pink-50/30 transition-all duration-300 ${
-                        pendingAction ? 'opacity-50 cursor-not-allowed' : ''
-                      }`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 bg-slate-100 rounded-lg group-hover:bg-white transition-colors">
-                          <Download className="w-5 h-5 text-slate-600 group-hover:text-pink-500" />
-                        </div>
-                        <div className="text-left">
-                          <p className="font-semibold text-slate-900">
-                            Invoices
-                          </p>
-                          <p className="text-xs text-slate-500">Download PDF</p>
-                          <p className="text-xs text-slate-500">
-                            {subscription?.order_id
-                              ? 'Download PDF'
-                              : 'Invoice not ready yet'}
-                          </p>
+                  {/* Info Grid */}
+                  {!isFree && !isExpired && (
+                    <div className="grid grid-cols-2 gap-6 pt-6 border-t border-slate-200/60">
+                      <div>
+                        <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">
+                          Billing Cycle
+                        </p>
+                        <div className="flex items-center gap-2 text-slate-700 font-semibold">
+                          <RefreshCw className="w-4 h-4 text-slate-400" />
+                          {currentPlanDetails?.billingCycle}ly
                         </div>
                       </div>
-                    </button>
-
-                    {/* 2. Customer Portal */}
-                    {subscription?.customerPortalUrl && !isPaused && (
-                      <button
-                        onClick={handlePortalRedirect}
-                        disabled={pendingAction !== null}
-                        className={`group flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-blue-300 hover:bg-blue-50/30 transition-all duration-300 ${
-                          pendingAction ? 'opacity-50 cursor-not-allowed' : ''
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 bg-slate-100 rounded-lg group-hover:bg-white transition-colors">
-                            <ExternalLink className="w-5 h-5 text-slate-600 group-hover:text-blue-500" />
-                          </div>
-                          <div className="text-left">
-                            <p className="font-semibold text-slate-900">
-                              Customer Portal
-                            </p>
-                            <p className="text-xs text-slate-500">
-                              Update payment methods
-                            </p>
-                          </div>
+                      <div>
+                        <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-1">
+                          {isGracePeriod ? 'Ends On' : 'Next Payment'}
+                        </p>
+                        <div className="flex items-center gap-2 text-slate-700 font-semibold">
+                          <Calendar className="w-4 h-4 text-slate-400" />
+                          {subscription?.renewsAt
+                            ? new Date(
+                                subscription.renewsAt
+                              ).toLocaleDateString()
+                            : 'N/A'}
                         </div>
-                      </button>
-                    )}
-
-                    {/* --- DYNAMIC ACTION BUTTONS --- */}
-
-                    {/* SCENARIO A: PAUSED -> UNPAUSE */}
-                    {isPaused && (
-                      <button
-                        onClick={() => setModalType('unpause')}
-                        disabled={pendingAction !== null}
-                        className={`group flex items-center justify-between p-4 rounded-xl border border-emerald-200 bg-emerald-50/20 hover:border-emerald-400 hover:bg-emerald-50 transition-all duration-300 col-span-1 md:col-span-2 ${
-                          pendingAction ? 'opacity-50 cursor-not-allowed' : ''
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 bg-emerald-100 rounded-lg group-hover:bg-emerald-200 transition-colors">
-                            <PlayCircle className="w-5 h-5 text-emerald-700" />
-                          </div>
-                          <div className="text-left">
-                            <p className="font-semibold text-emerald-900">
-                              Unpause Subscription
-                            </p>
-                            <p className="text-xs text-emerald-600">
-                              Resume billing and regain access
-                            </p>
-                          </div>
-                        </div>
-                      </button>
-                    )}
-
-                    {/* SCENARIO B: GRACE PERIOD -> REVOKE */}
-                    {isGracePeriod && (
-                      <button
-                        onClick={() => setModalType('revoke')}
-                        disabled={pendingAction !== null}
-                        className={`group flex items-center justify-between p-4 cursor-pointer rounded-xl border border-slate-900 bg-slate-900 hover:bg-slate-800 hover:shadow-lg transition-all duration-300 col-span-1 md:col-span-2 ${
-                          pendingAction ? 'opacity-50 cursor-not-allowed' : ''
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 bg-slate-700 rounded-lg transition-colors">
-                            <RotateCcw className="w-5 h-5 text-white" />
-                          </div>
-                          <div className="text-left">
-                            <p className="font-semibold text-white">
-                              Revoke Cancellation
-                            </p>
-                            <p className="text-xs text-slate-300">
-                              Continue subscription (Undo cancel)
-                            </p>
-                          </div>
-                        </div>
-                      </button>
-                    )}
-
-                    {/* SCENARIO C: ACTIVE -> PAUSE + CANCEL */}
-                    {isActive && (
-                      <>
-                        <button
-                          onClick={() => setModalType('pause')}
-                          disabled={pendingAction !== null}
-                          className={`group flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-amber-300 hover:bg-amber-50/30 transition-all duration-300 ${
-                            pendingAction ? 'opacity-50 cursor-not-allowed' : ''
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 bg-slate-100 rounded-lg group-hover:bg-white transition-colors">
-                              <PauseCircle className="w-5 h-5 text-slate-600 group-hover:text-amber-500" />
-                            </div>
-                            <div className="text-left">
-                              <p className="font-semibold text-slate-900">
-                                Pause Subscription
-                              </p>
-                              <p className="text-xs text-slate-500">
-                                Temporarily stop billing
-                              </p>
-                            </div>
-                          </div>
-                        </button>
-
-                        <button
-                          onClick={() => setModalType('cancel')}
-                          disabled={pendingAction !== null}
-                          className={`group flex items-center justify-between p-4 rounded-xl border border-slate-200 hover:border-red-200 hover:bg-red-50/30 transition-all duration-300 ${
-                            pendingAction ? 'opacity-50 cursor-not-allowed' : ''
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="p-2 bg-slate-100 rounded-lg group-hover:bg-white transition-colors">
-                              <XCircle className="w-5 h-5 text-slate-600 group-hover:text-red-500" />
-                            </div>
-                            <div className="text-left">
-                              <p className="font-semibold text-slate-900 group-hover:text-red-600 transition-colors">
-                                Cancel Subscription
-                              </p>
-                              <p className="text-xs text-slate-500">
-                                Stop billing & lose access
-                              </p>
-                            </div>
-                          </div>
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </>
-              )}
-
-              {/* Footer Section */}
-              <div className="mt-8 pt-6 border-t border-slate-100 flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-slate-500">
-                <p className="flex items-center gap-2">
-                  <Clock className="w-4 h-4" />
-                  {isGracePeriod && subscription?.renewsAt
-                    ? `Access ends on ${new Date(
-                        subscription.renewsAt
-                      ).toLocaleDateString()}`
-                    : isExpired
-                    ? `Subscription expired`
-                    : `Member since ${new Date(
-                        subscription?.createdAt || Date.now()
-                      ).getFullYear()}`}
-                </p>
-                <Link
-                  to="/plans"
-                  className="text-pink-500 hover:text-pink-600 font-semibold hover:underline"
-                >
-                  View other plans
-                </Link>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
+
+            {/* --- RIGHT COLUMN: ACTIONS GRID --- */}
+            <div className="flex flex-col gap-5">
+              {/* Free Plan / Upgrade Banner */}
+              {(isFree || isExpired) && (
+                <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-[2rem] p-8 text-white text-center shadow-2xl relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-bl-full transition-transform group-hover:scale-110" />
+                  <Crown className="w-12 h-12 text-yellow-400 mx-auto mb-4" />
+                  <h3 className="text-2xl font-bold mb-2">Upgrade to Pro</h3>
+                  <p className="text-slate-300 mb-6 text-sm">
+                    Unlock unlimited potential and features.
+                  </p>
+                  <Link
+                    to="/plans"
+                    className="block w-full py-3.5 bg-white text-slate-900 font-bold rounded-xl hover:bg-slate-100 transition shadow-lg active:scale-95"
+                  >
+                    View Plans
+                  </Link>
+                </div>
+              )}
+
+              {/* Paid Plan Actions */}
+              {!isFree && !isExpired && (
+                <>
+                  <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wider px-2">
+                    Quick Actions
+                  </h3>
+
+                  {/* Invoices Tile */}
+                  {/* 🐞 2. Fix: Disable Invoice button while pendingAction is active */}
+                  <button
+                    disabled={pendingAction !== null}
+                    onClick={() => setInvoiceOpen(true)}
+                    className={`group relative bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 transition-all duration-300 text-left overflow-hidden 
+                      ${
+                        pendingAction !== null
+                          ? 'opacity-60 cursor-not-allowed grayscale'
+                          : 'hover:shadow-xl hover:shadow-slate-200/50 hover:border-pink-200'
+                      }`}
+                  >
+                    <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                      <Download className="w-20 h-20 text-pink-500 -rotate-12" />
+                    </div>
+                    <div className="w-12 h-12 bg-pink-50 rounded-full flex items-center justify-center mb-4 group-hover:bg-pink-500 group-hover:text-white transition-colors text-pink-600">
+                      <FileText className="w-6 h-6" />
+                    </div>
+                    <h4 className="text-lg font-bold text-slate-900 mb-1">
+                      Invoice
+                    </h4>
+                    <p className="text-xs text-slate-500 font-medium">
+                      Download latest PDF
+                    </p>
+                  </button>
+
+                  {/* Customer Portal Tile */}
+                  {/* 🐞 3. Fix: Removed !isPaused check so users can access billing portal even when paused */}
+                  {subscription?.customerPortalUrl && (
+                    <button
+                      onClick={() =>
+                        (window.location.href = subscription.customerPortalUrl)
+                      }
+                      className="group relative bg-white p-6 rounded-[2rem] shadow-sm border border-slate-100 hover:shadow-xl hover:shadow-slate-200/50 hover:border-blue-200 transition-all duration-300 text-left overflow-hidden"
+                    >
+                      <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center mb-4 group-hover:bg-blue-500 group-hover:text-white transition-colors text-blue-600">
+                        <CreditCard className="w-6 h-6" />
+                      </div>
+                      <h4 className="text-lg font-bold text-slate-900 mb-1">
+                        Billing Portal
+                      </h4>
+                      <p className="text-xs text-slate-500 font-medium">
+                        Update card details
+                      </p>
+                      <ExternalLink className="absolute top-6 right-6 w-4 h-4 text-slate-300 group-hover:text-blue-500" />
+                    </button>
+                  )}
+
+                  {/* Danger Zone: Pause/Cancel */}
+                  {!isCancelled ? (
+                    <div className="grid grid-cols-2 gap-4">
+                      {isPaused ? (
+                        <button
+                          onClick={() => safeSetModal('unpause')}
+                          disabled={pendingAction !== null}
+                          className="col-span-2 bg-emerald-500 text-white p-4 rounded-3xl font-bold flex items-center justify-center gap-2 hover:bg-emerald-600 shadow-lg shadow-emerald-200 active:scale-[0.98] transition-all disabled:opacity-50 disabled:pointer-events-none"
+                        >
+                          <PlayCircle className="w-5 h-5" /> Resume
+                        </button>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => safeSetModal('pause')}
+                            disabled={pendingAction !== null}
+                            className="bg-white border border-slate-200 p-4 rounded-3xl font-bold text-slate-600 flex flex-col items-center justify-center gap-2 hover:bg-slate-50 hover:border-slate-300 transition-all disabled:opacity-50 disabled:pointer-events-none"
+                          >
+                            <PauseCircle className="w-6 h-6 text-amber-500" />
+                            <span className="text-xs">Pause</span>
+                          </button>
+                          <button
+                            onClick={() => safeSetModal('cancel')}
+                            disabled={pendingAction !== null}
+                            className="bg-white border border-slate-200 p-4 rounded-3xl font-bold text-slate-600 flex flex-col items-center justify-center gap-2 hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition-all disabled:opacity-50 disabled:pointer-events-none"
+                          >
+                            <XCircle className="w-6 h-6 text-red-500" />
+                            <span className="text-xs">Cancel</span>
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  ) : (
+                    <div className=" bg-pink-400 rounded-[2rem] p-6 text-white shadow-xl">
+                      <h3 className="text-lg font-bold mb-2">
+                        Subscription Cancelled
+                      </h3>
+                      <p className="text-sm text-orange-100 mb-4">
+                        Your plan will end on{' '}
+                        <strong>
+                          {new Date(subscription.renewsAt).toLocaleDateString()}
+                        </strong>
+                        . Reactivate now to avoid losing access.
+                      </p>
+
+                      <button
+                        onClick={() => safeSetModal('revoke')}
+                        disabled={pendingAction !== null}
+                        className="w-full bg-white text-orange-600 font-bold py-3 rounded-xl hover:bg-orange-50 transition active:scale-95 disabled:opacity-50 disabled:pointer-events-none"
+                      >
+                        Activate Now
+                      </button>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Footer Links */}
+          <div className="mt-12 flex items-center justify-center gap-6 text-sm text-slate-400 font-medium">
+            <span className="flex items-center gap-1">
+              <ShieldCheck className="w-4 h-4" /> Secure Payment
+            </span>
+            <span className="w-1 h-1 bg-slate-300 rounded-full" />
+            <span>
+              All plans include automatic backups and can be cancelled anytime
+            </span>
           </div>
         </div>
       </div>

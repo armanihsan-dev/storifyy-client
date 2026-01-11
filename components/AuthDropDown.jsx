@@ -32,6 +32,7 @@ import {
 import { Link, useNavigate } from 'react-router-dom';
 import ConfirmDialog from '@/components/ui/ConfirmDialog';
 import { Crown } from 'lucide-react';
+import { MdSubscriptions } from 'react-icons/md';
 
 const AuthDropDown = ({ BASEURL }) => {
   const [userInfo, setUserInfo] = useState({
@@ -175,9 +176,12 @@ const AuthDropDown = ({ BASEURL }) => {
                   Account
                 </DropdownMenuLabel>
 
-                <DropdownMenuItem asChild className={menuItemClass}>
+                <DropdownMenuItem
+                  asChild
+                  className="text-slate-500 text-sm hover:bg-slate-100 transition  py-2.5 px-3 rounded-lg"
+                >
                   <Link to={`/profile/${userInfo.id}`}>
-                    <FiSettings size={16} className={iconClass} />
+                    <FiSettings size={16} className={`text-slate-400`} />
                     <span className="flex-1">My Profile</span>
                     <FiChevronRight size={14} className="text-slate-300" />
                   </Link>
@@ -191,7 +195,19 @@ const AuthDropDown = ({ BASEURL }) => {
                   Subscription
                 </DropdownMenuLabel>
 
-                {/* Logout All Trigger */}
+                <Link to="/plans" className="w-full cursor-pointer">
+                  <DropdownMenuItem
+                    className={`${menuItemClass} !text-blue-600 hover:!bg-blue-50 hover:!text-blue-700 focus:!bg-blue-50 cursor-pointer`}
+                  >
+                    <MdSubscriptions
+                      size={16}
+                      className="text-blue-400 group-hover:text-blue-600 transition-colors"
+                    />
+                    <div className="flex flex-col">
+                      <span className="leading-none">Upgrade Plan</span>
+                    </div>
+                  </DropdownMenuItem>
+                </Link>
                 <Link
                   to="/manage-subscription"
                   className="w-full cursor-pointer"
