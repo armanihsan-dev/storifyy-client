@@ -145,22 +145,6 @@ const FileActionsDropdown = ({
                 </code>
               </div>
             </div>
-
-            {/* SHARED STATUS */}
-            <div className="p-4 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-900/50 flex gap-3">
-              <div className="p-2 bg-green-100 dark:bg-green-900/40 rounded-full text-green-600 dark:text-green-400">
-                <Share2 className="w-4 h-4" />
-              </div>
-
-              <div>
-                <p className="text-sm font-semibold text-green-800 dark:text-green-300">
-                  Shared via link
-                </p>
-                <p className="text-xs text-green-700 dark:text-green-400">
-                  Publicly accessible
-                </p>
-              </div>
-            </div>
           </div>
         </AlertDialogContent>
       </AlertDialog>

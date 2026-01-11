@@ -48,7 +48,7 @@ const FileCard = ({
   }
 
   return (
-    <div className="cursor-pointer w-full rounded-xl border border-slate-200 bg-white p-4 shadow-sm hover:shadow-md transition">
+    <div className="flex flex-col justify-between cursor-pointer w-full rounded-xl border border-slate-200 bg-white p-4 shadow-sm hover:shadow-md transition">
       {/* Top section */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 min-w-0">

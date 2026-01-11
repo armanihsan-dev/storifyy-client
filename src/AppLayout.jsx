@@ -20,23 +20,28 @@ import { BsInbox } from 'react-icons/bs';
 import toast, { Toaster } from 'react-hot-toast';
 import FileUpload from '../components/FileUpload';
 import CreateDirectory from '../components/CreateDirectory';
-import { useCurrentUser, useSearch } from './hooks/otherHooks';
-import { MdWorkspacePremium } from 'react-icons/md';
+import {
+  useCurrentUser,
+  useMySubscription,
+  useSearch,
+} from './hooks/otherHooks';
 import GoogleDrivePicker from '../components/GoogleDrivePicker';
+import { AccountHibernation } from '../components/DisabledAccount';
+import FullPageLoader from '../components/FullPageLoader';
 
 const AppLayout = ({ children }) => {
   const BASE_URL = 'http://localhost:3000';
   const navigate = useNavigate();
-  const location = useLocation();
   const { dirId } = useParams();
 
+  /* -------------------- DEBOUNCE -------------------- */
   function useDebounce(value, delay = 400) {
     const [debounced, setDebounced] = useState(value);
 
     useEffect(() => {
       const t = setTimeout(() => setDebounced(value), delay);
       return () => clearTimeout(t);
-    }, [value]);
+    }, [value, delay]);
 
     return debounced;
   }
@@ -44,27 +49,54 @@ const AppLayout = ({ children }) => {
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search);
 
-  const { data, isLoading } = useSearch(debouncedSearch, dirId);
+  const { data: searchResult } = useSearch(debouncedSearch, dirId);
 
-  // Fetch Current User from React Query
-  const { data: currentUser, isPending } = useCurrentUser();
+  /* -------------------- AUTH -------------------- */
+  const { data: currentUser, isPending, isError } = useCurrentUser();
+  const { data: subscriptionData } = useMySubscription();
 
+  /* -------------------- UI STATE -------------------- */
   const currentSection = useSectionStore((s) => s.currentSection);
-
   const [shouldRefresh, setShouldRefresh] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [folderName, setFolderName] = useState('');
 
-  // Sidebar items
-  const SidebarItem = ({ icon: Icon, label, to, section }) => {
-    const currentSection = useSectionStore((s) => s.currentSection);
+  /* -------------------- LOADING -------------------- */
 
+  /* -------------------- REDIRECT (SIDE EFFECT) -------------------- */
+  useEffect(() => {
+    if (!isPending && (isError || !currentUser)) {
+      navigate('/login', { replace: true });
+    }
+  }, [isPending, isError, currentUser, navigate]);
+
+  if (isPending) {
+    return <FullPageLoader />;
+  }
+
+  /* ⛔ stop render while redirecting */
+  if (!currentUser) {
+    return null;
+  }
+
+  /* -------------------- DISABLED ACCOUNT -------------------- */
+  if (currentUser.isDisabled) {
+    return (
+      <AccountHibernation
+        user={currentUser}
+        subscriptionData={subscriptionData}
+      />
+    );
+  }
+
+  /* -------------------- SIDEBAR ITEM -------------------- */
+  const SidebarItem = ({ icon: Icon, label, to, section }) => {
     const active = currentSection === section;
 
     return (
       <Link to={to}>
         <div
-          className={`flex items-center gap-4 px-6 py-4 cursor-pointer transition-all duration-300 ${
+          className={`flex items-center gap-4 px-6 py-4 transition-all ${
             active
               ? 'text-rose-500 bg-rose-50 border-r-4 border-rose-500'
               : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
@@ -77,15 +109,17 @@ const AppLayout = ({ children }) => {
     );
   };
 
-  // -------------------- DIRECTORY CREATION --------------------
+  /* -------------------- CREATE DIRECTORY -------------------- */
   async function handleCreateDirectory(e) {
     e.preventDefault();
 
-    const URL = `${BASE_URL}/directory/${dirId || ''}`;
-    const response = await fetch(URL, {
+    const response = await fetch(`${BASE_URL}/directory/${dirId || ''}`, {
       method: 'POST',
       credentials: 'include',
-      headers: { folderName },
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ folderName }),
     });
 
     const data = await response.json();
@@ -100,13 +134,14 @@ const AppLayout = ({ children }) => {
     setShouldRefresh(true);
   }
 
+  /* ==================== RENDER ==================== */
   return (
-    <div className="flex h-screen bg-gray-50 font-[Poppins] overflow-hidden text-slate-800">
+    <div className="flex h-screen bg-gray-50 font-[Poppins] overflow-hidden">
       <Toaster position="top-center" />
 
-      {/* ------------------- SIDEBAR ------------------- */}
+      {/* ---------------- SIDEBAR ---------------- */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 w-64 bg-white flex flex-col shadow-xl transition-transform duration-300 lg:translate-x-0 lg:static lg:shadow-none border-r border-slate-100 ${
+        className={`fixed inset-y-0 left-0 z-40 w-64 bg-white flex flex-col border-r transition-transform lg:static lg:translate-x-0 ${
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -114,11 +149,10 @@ const AppLayout = ({ children }) => {
           className="h-24 flex items-center px-8 gap-2 cursor-pointer"
           onClick={() => navigate('/')}
         >
-          <img src="/logo.svg" alt="logo" className="w-8 lg:w-10" />
-          <span className="text-xl lg:text-2xl font-bold text-pink-400 tracking-tight">
-            Storifyy
-          </span>
+          <img src="/logo.svg" className="w-8" />
+          <span className="text-2xl font-bold text-pink-400">Storifyy</span>
         </div>
+
         <nav className="flex flex-col gap-1 py-4">
           <SidebarItem
             icon={FiGrid}
@@ -127,7 +161,7 @@ const AppLayout = ({ children }) => {
             section="dashboard"
           />
 
-          {currentUser?.role === 'Admin' && (
+          {currentUser.role === 'Admin' && (
             <SidebarItem
               icon={FiUsers}
               label="Application Users"
@@ -142,14 +176,12 @@ const AppLayout = ({ children }) => {
             to="/inbox"
             section="inbox"
           />
-
           <SidebarItem
             icon={FiShare2}
             label="Shared"
             to="/shared"
             section="shared"
           />
-
           <SidebarItem
             icon={FiStar}
             label="Starred"
@@ -157,75 +189,55 @@ const AppLayout = ({ children }) => {
             section="starred"
           />
         </nav>
-
-        <div className="mt-auto p-6 flex items-center justify-center">
-          <img src="/Illustration.png" className="w-28" alt="" />
-        </div>
       </aside>
 
-      {/* MOBILE OVERLAY */}
-      {mobileMenuOpen && (
-        <div
-          className="fixed inset-0 bg-black/20 z-30 lg:hidden"
-          onClick={() => setMobileMenuOpen(false)}
-        ></div>
-      )}
-
-      {/* ------------------- MAIN CONTENT ------------------- */}
+      {/* ---------------- MAIN ---------------- */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="h-24 px-8 flex items-center justify-between bg-[#F3F4F8] shrink-0">
+        <header className="h-24 px-8 flex items-center justify-between bg-[#F3F4F8]">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden p-2 text-slate-600"
+              className="lg:hidden"
             >
               <FiMenu className="w-6 h-6" />
             </button>
 
-            <div className="hidden md:flex items-center bg-white px-5 py-3 rounded-3xl w-[400px] shadow-sm border border-slate-100">
-              <FiSearch className="text-slate-400 mr-3 w-5 h-5" />
+            <div className="hidden md:flex bg-white px-5 py-3 rounded-3xl w-[400px]">
+              <FiSearch className="mr-3" />
               <input
-                type="text"
-                placeholder="Search files..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="bg-transparent border-none outline-none w-full text-sm font-medium text-slate-700 placeholder:text-slate-400"
+                placeholder="Search files..."
+                className="w-full outline-none bg-transparent"
               />
             </div>
           </div>
 
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-4">
             <GoogleDrivePicker />
-            <div className="flex gap-4">
-              <FileUpload setShouldRefresh={setShouldRefresh} />
-
-              <CreateDirectory
-                folderName={folderName}
-                setfolderName={setFolderName}
-                handleCreateDirectory={handleCreateDirectory}
-              />
-            </div>
-            <div className="pl-4 border-l border-slate-300/50">
-              <AuthDropDown BASEURL={BASE_URL} />
-            </div>
+            <FileUpload setShouldRefresh={setShouldRefresh} />
+            <CreateDirectory
+              folderName={folderName}
+              setfolderName={setFolderName}
+              handleCreateDirectory={handleCreateDirectory}
+            />
+            <AuthDropDown BASEURL={BASE_URL} />
           </div>
         </header>
 
-        <div className="flex-1 overflow-hidden">
-          <div className="h-full overflow-y-auto custom-scrollbar pt-0">
-            {children || (
-              <Outlet
-                context={{
-                  shouldRefresh,
-                  setShouldRefresh,
-                  searchQuery: debouncedSearch,
-                  searchResult: data,
-                  isSearching: !!debouncedSearch,
-                }}
-              />
-            )}
-          </div>
-        </div>
+        <main className="flex-1 overflow-y-auto">
+          {children || (
+            <Outlet
+              context={{
+                shouldRefresh,
+                setShouldRefresh,
+                searchQuery: debouncedSearch,
+                searchResult,
+                isSearching: !!debouncedSearch,
+              }}
+            />
+          )}
+        </main>
       </div>
     </div>
   );

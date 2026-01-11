@@ -234,13 +234,10 @@ const DashboardPage = () => {
             {/* 📁 Directories Section */}
             {directoriesList.length > 0 && (
               <section>
-                <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200/60">
+                <div className="flex items-center gap-2 mb-4 pb-2">
                   <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">
                     Directories
                   </h3>
-                  <span className="bg-slate-100 text-slate-500 text-[10px] px-1.5 py-0.5 rounded-full font-bold">
-                    {directoriesList.length}
-                  </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -267,13 +264,10 @@ const DashboardPage = () => {
             {/* 📄 Files Section */}
             {filesList.length > 0 && (
               <section>
-                <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-200/60">
+                <div className="flex items-center gap-2 mb-4 pb-2">
                   <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">
                     Files
                   </h3>
-                  <span className="bg-slate-100 text-slate-500 text-[10px] px-1.5 py-0.5 rounded-full font-bold">
-                    {filesList.length}
-                  </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">

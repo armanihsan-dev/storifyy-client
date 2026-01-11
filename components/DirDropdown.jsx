@@ -256,22 +256,6 @@ const DirDropdown = ({ id, onDelete, onRename, details }) => {
               </code>
             </div>
           </div>
-
-          {/* SHARE BANNER (only if link is public) */}
-          <div className="mt-2   p-4 rounded-2xl bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 flex items-start gap-3">
-            <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-800 flex items-center justify-center">
-              <Share2 className="text-green-600 dark:text-green-300" />
-            </div>
-
-            <div>
-              <p className="font-semibold text-green-700 dark:text-green-300">
-                Shared via link
-              </p>
-              <p className="text-sm text-green-600 dark:text-green-400">
-                Publicly accessible
-              </p>
-            </div>
-          </div>
         </AlertDialogContent>
       </AlertDialog>
 

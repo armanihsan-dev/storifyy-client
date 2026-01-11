@@ -122,3 +122,27 @@ export function useSearch(query, parendDirId) {
     });
 }
 
+export function useAccountDisable() {
+    return useMutation({
+        mutationFn: async () => {
+            const { data } = await axiosAPI.post(
+                '/account/disable',
+                {},
+                { withCredentials: true }
+            );
+            return data;
+        }
+    });
+}
+
+export function useDeleteAccount() {
+    return useMutation({
+        mutationFn: async () => {
+            const { data } = await axiosAPI.post('/account/delete',
+                {},
+                { withCredentials: true }
+            )
+            return data;
+        }
+    })
+}
