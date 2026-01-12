@@ -235,7 +235,9 @@ const UserData = ({
 
       {/* Files + Folders */}
       <div className="bg-white p-6 rounded-2xl shadow-sm">
-        <h3 className="text-lg font-semibold text-gray-600 mb-4">User Files</h3>
+        <h3 className="text-lg font-semibold text-gray-600 mb-4">
+          User folders & files
+        </h3>
 
         <div className="rounded-xl">
           {!directory ? (

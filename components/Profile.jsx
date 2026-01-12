@@ -159,13 +159,20 @@ const Profile = () => {
   // --- RE-ENABLE ACCOUNT HANDLER ---
 
   // --- DELETE HANDLER ---
-  const { mutate: deleteAccount } = useDeleteAccount();
+  // --- DELETE HANDLER ---
+  // Change this line:
+  const { mutate: deleteAccount, isPending: isDeleting } = useDeleteAccount();
 
   const handleDeleteAccount = () => {
     deleteAccount(undefined, {
       onSuccess: () => {
         toast.success('Account deleted successfully');
         setActivePopup(null);
+        queryClient.invalidateQueries(['current-user']);
+        navigate('/login');
+      },
+      onError: () => {
+        toast.error('Failed to delete account');
       },
     });
   };
@@ -211,7 +218,7 @@ const Profile = () => {
     <>
       <Header />
 
-      <div className="min-h-screen bg-[#F8F9FD] p-6 md:p-12 mt-7 relative overflow-hidden flex items-center justify-center">
+      <div className="min-h-screen bg-[#F8F9FD] p-6 md:p-12 mt-12 relative overflow-hidden flex items-center justify-center">
         <Toaster
           toastOptions={{
             style: { borderRadius: '10px', background: '#222', color: '#fff' },
@@ -291,7 +298,7 @@ const Profile = () => {
                   <span className="text-xs font-bold uppercase">Joined</span>
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-800">
+                  <h3 className="text-[18px] lg:text-xl font-bold text-gray-800">
                     {user.formattedDate}
                   </h3>
                   <p className="text-xs text-gray-400">
@@ -343,7 +350,7 @@ const Profile = () => {
               />
               <div className="flex justify-between items-start mb-8 relative z-10">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                  <h2 className="text-[16px] lg:text-2xl font-bold text-gray-800 flex items-center gap-2">
                     <FiShield
                       className={
                         user.hasPassword ? 'text-emerald-500' : 'text-rose-500'
@@ -351,12 +358,12 @@ const Profile = () => {
                     />
                     Security Center
                   </h2>
-                  <p className="text-gray-400 text-sm mt-1">
+                  <p className="text-gray-400 text-[10px] lg:text-sm mt-1">
                     Manage your account access and protection.
                   </p>
                 </div>
                 <div
-                  className={`px-4 py-2 rounded-full text-sm font-bold flex items-center gap-2 ${
+                  className={`px-4 py-2 rounded-full text-[8px]  lg:text-sm font-bold flex items-center gap-2 ${
                     user.hasPassword
                       ? 'bg-emerald-50 text-emerald-600'
                       : 'bg-rose-50 text-rose-600'
@@ -372,10 +379,10 @@ const Profile = () => {
                   <FiKey size={32} className="text-gray-300" />
                 </div>
                 <div className="px-6 flex-1">
-                  <h3 className="font-bold text-gray-800 text-lg">
+                  <h3 className="font-bold text-gray-800 text-sm lg:text-lg">
                     Password Protection
                   </h3>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-[10px] lg:text-xs text-gray-500 mt-1">
                     {user.hasPassword
                       ? 'Your account is currently password protected. Change it periodically for safety.'
                       : 'Your account has no password. Set one now to prevent unauthorized access.'}
@@ -461,8 +468,9 @@ const Profile = () => {
                   </p>
                   <p className="text-xs text-gray-600 mt-2 max-w-sm leading-relaxed">
                     Deleting your account will permanently remove all your data,
-                    files, and settings. You will lose access to all connected
-                    services and this action cannot be reversed.
+                    files, <strong>subscription</strong> and settings. You will
+                    lose access to all connected services and this action cannot
+                    be reversed.
                   </p>
                 </div>
               </div>
@@ -485,7 +493,10 @@ const Profile = () => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                onClick={() => !pendingAccountDisable && setActivePopup(null)}
+                // Update this line to include !isDeleting
+                onClick={() =>
+                  !pendingAccountDisable && !isDeleting && setActivePopup(null)
+                }
                 className="absolute inset-0 bg-gray-900/40 backdrop-blur-md"
               />
 
@@ -561,15 +572,33 @@ const Profile = () => {
                     <div className="flex gap-3">
                       <button
                         onClick={() => setActivePopup(null)}
-                        className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition"
+                        disabled={isDeleting}
+                        className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Cancel
                       </button>
                       <button
                         onClick={handleDeleteAccount}
-                        className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl shadow-lg shadow-red-600/30 transition"
+                        disabled={isDeleting}
+                        className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl shadow-lg shadow-red-600/30 transition flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                       >
-                        Yes, I am sure
+                        {isDeleting ? (
+                          <>
+                            <motion.div
+                              animate={{ rotate: 360 }}
+                              transition={{
+                                repeat: Infinity,
+                                duration: 1,
+                                ease: 'linear',
+                              }}
+                            >
+                              <FiLoader size={18} />
+                            </motion.div>
+                            Processing...
+                          </>
+                        ) : (
+                          'Yes, I am sure'
+                        )}
                       </button>
                     </div>
                   </div>

@@ -36,6 +36,7 @@ const DashboardPage = () => {
     searchResult,
     isSearching,
   } = useOutletContext();
+  const MAX_VISIBLE_CRUMBS = 3;
 
   const setSection = useSectionStore((s) => s.setSection);
 
@@ -63,6 +64,16 @@ const DashboardPage = () => {
           .join('/')
       : 'Home';
   }, [breadcrumb]);
+  const displayBreadcrumb = useMemo(() => {
+    if (!breadcrumb || breadcrumb.length <= MAX_VISIBLE_CRUMBS + 1) {
+      return breadcrumb;
+    }
+
+    const first = breadcrumb[0];
+    const lastCrumbs = breadcrumb.slice(-MAX_VISIBLE_CRUMBS);
+
+    return [first, { _id: 'ellipsis', name: '…' }, ...lastCrumbs];
+  }, [breadcrumb]);
 
   const directoriesList = isSearching
     ? searchResult?.directories ?? []
@@ -70,6 +81,7 @@ const DashboardPage = () => {
 
   const filesList = isSearching ? searchResult?.files ?? [] : data?.files ?? [];
 
+  const isHome = location.pathname === '/';
   const totalItems = directoriesList.length + filesList.length;
   const user = { isOwner: data?.isOwner ?? true };
 
@@ -86,6 +98,7 @@ const DashboardPage = () => {
   }
 
   // Handle Search Clear (Ux Improvement)
+  //dont remove this even the methods not defined
   const handleClearSearch = () => {
     if (setSearchQuery) setSearchQuery('');
     // Alternatively, the search component in Parent controls this,
@@ -132,14 +145,23 @@ const DashboardPage = () => {
               // 📂 Navigation Mode Header
               <nav className="flex items-center text-sm font-medium text-slate-500 overflow-x-auto no-scrollbar mask-gradient-right">
                 <button
-                  onClick={() => navigate(-1)}
-                  className="mr-3 p-2 rounded-full hover:bg-slate-200/60 text-slate-600 transition-colors"
+                  onClick={() => {
+                    if (isHome) return;
+                    navigate(-1);
+                  }}
+                  disabled={isHome}
+                  className={`mr-3 p-2 rounded-full transition-colors
+    ${
+      isHome
+        ? 'text-slate-300 cursor-not-allowed'
+        : 'hover:bg-slate-200/60 text-slate-600'
+    }`}
                   aria-label="Go Back"
                 >
                   <FiArrowLeft size={18} />
                 </button>
 
-                <div className="flex items-center whitespace-nowrap">
+                <div className="flex items-center whitespace-nowrap min-w-0">
                   <span
                     className="flex items-center gap-1 cursor-pointer hover:text-pink-600 transition-colors px-1"
                     onClick={() => {
@@ -157,28 +179,39 @@ const DashboardPage = () => {
                   {bcLoading ? (
                     <div className="h-4 w-24 bg-slate-200 rounded animate-pulse" />
                   ) : (
-                    breadcrumb?.slice(1).map((crumb, index) => {
-                      const isLast = index === breadcrumb.slice(1).length - 1;
+                    displayBreadcrumb?.slice(1).map((crumb, index, arr) => {
+                      const isEllipsis = crumb._id === 'ellipsis';
+                      const isLast = index === arr.length - 1;
+
                       return (
-                        <div key={crumb._id} className="flex items-center">
+                        <div
+                          key={`${crumb._id}-${index}`}
+                          className="flex items-center min-w-0"
+                        >
                           <span
-                            className={`px-1 py-0.5 rounded transition-colors ${
-                              isLast
-                                ? 'text-pink-600 font-semibold bg-pink-50'
-                                : 'cursor-pointer hover:text-pink-600 hover:bg-slate-100'
-                            }`}
+                            className={`px-1 py-0.5 rounded transition-colors truncate max-w-[10rem]
+            ${
+              isEllipsis
+                ? 'cursor-default text-slate-400'
+                : isLast
+                ? 'text-pink-600 font-semibold bg-pink-50'
+                : 'cursor-pointer hover:text-pink-600 hover:bg-slate-100'
+            }`}
                             onClick={() => {
-                              if (!isLast)
+                              if (!isEllipsis && !isLast) {
                                 navigate(`/directory/${crumb._id}`, {
                                   state: {
                                     fromStarred:
                                       location.state?.fromStarred || false,
                                   },
                                 });
+                              }
                             }}
+                            title={crumb.name}
                           >
                             {crumb.name}
                           </span>
+
                           {!isLast && (
                             <span className="text-slate-300 mx-2">/</span>
                           )}

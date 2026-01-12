@@ -6,77 +6,75 @@ import { fetchShareableUsers } from '../API/userAPI';
 import toast from 'react-hot-toast';
 import {
   FiX,
-  FiMail,
-  FiSend,
   FiCheck,
-  FiChevronDown,
-  FiShield,
   FiSearch,
-  FiTrash2,
+  FiEye,
+  FiEdit3,
+  FiShare2,
+  FiUsers,
+  FiMail,
 } from 'react-icons/fi';
 
-// --- Components ---
+// --- Helper Components ---
 
-const Avatar = ({ src, name, size = 'md' }) => {
-  const sizeClasses = size === 'sm' ? 'w-8 h-8 text-xs' : 'w-10 h-10 text-sm';
-
-  if (src) {
-    return (
-      <img
-        src={src}
-        alt={name}
-        className={`${sizeClasses} rounded-full object-cover ring-2 ring-white shadow-sm`}
-      />
-    );
-  }
-  return (
-    <div
-      className={`${sizeClasses} rounded-full bg-gradient-to-br from-rose-100 to-rose-200 text-rose-600 flex items-center justify-center font-bold ring-2 ring-white shadow-sm`}
-    >
-      {name?.charAt(0).toUpperCase()}
+const AccessCard = ({ active, icon, title, desc, onClick }) => (
+  <button
+    onClick={onClick}
+    className={`
+      relative w-full flex flex-col items-center md:items-start text-center md:text-left gap-2 md:gap-3 p-3 rounded-xl border transition-all duration-200 outline-none
+      ${
+        active
+          ? 'border-rose-500 bg-rose-50 text-rose-900 shadow-sm'
+          : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-600 bg-white'
+      }
+    `}
+  >
+    <div className="flex items-center gap-3">
+      <div
+        className={`p-2 rounded-full shrink-0 ${
+          active ? 'bg-rose-200 text-rose-700' : 'bg-slate-100 text-slate-500'
+        }`}
+      >
+        {icon}
+      </div>
+      <p className="text-sm font-bold leading-none mb-1">{title}</p>
     </div>
-  );
-};
-
-const RoleSelector = ({ value, onChange, disabled }) => (
-  <div className="relative group">
-    <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-rose-500">
-      <FiShield />
+    <div className="min-w-0">
+      <p
+        className={`text-[11px] truncate ${
+          active ? 'text-rose-700/80' : 'text-slate-400'
+        }`}
+      >
+        {desc}
+      </p>
     </div>
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      disabled={disabled}
-      className="appearance-none bg-rose-50 hover:bg-rose-100/80 border border-rose-100 text-rose-700 font-semibold text-sm rounded-xl py-2.5 pl-9 pr-8 focus:outline-none focus:ring-2 focus:ring-rose-500/20 cursor-pointer transition-colors"
-    >
-      <option value="viewer">Viewer</option>
-      <option value="editor">Editor</option>
-    </select>
-    <FiChevronDown
-      className="absolute right-3 top-1/2 -translate-y-1/2 text-rose-400 pointer-events-none"
-      size={14}
-    />
-  </div>
+    {active && (
+      <div className="absolute top-3 right-3 text-rose-500 md:block hidden">
+        <FiCheck size={14} />
+      </div>
+    )}
+  </button>
 );
 
 const SharePopup = ({ isOpen, onClose, fileId, BASE_URL }) => {
   const [email, setEmail] = useState('');
-  const [selectedUsers, setSelectedUsers] = useState([]); // Array of objects { email, name, picture }
+  const [selectedUsers, setSelectedUsers] = useState([]); // Array of objects
   const [loading, setLoading] = useState(false);
   const [role, setRole] = useState('viewer');
   const inputRef = useRef(null);
 
   // Focus input on open
   useEffect(() => {
-    if (isOpen && inputRef.current)
+    if (isOpen && inputRef.current) {
       setTimeout(() => inputRef.current.focus(), 100);
+    }
   }, [isOpen]);
 
-  // Fetch users based on input
+  // Fetch users
   const { data: users = [], isLoading: usersLoading } = useQuery({
     queryKey: ['shareable-users', email],
     queryFn: fetchShareableUsers,
-    enabled: isOpen && email.length > 0,
+    enabled: isOpen,
     keepPreviousData: true,
   });
 
@@ -85,42 +83,31 @@ const SharePopup = ({ isOpen, onClose, fileId, BASE_URL }) => {
   const handleAddEmail = () => {
     const trimmed = email.trim();
     if (!trimmed) return;
-
-    // Basic validation
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
       toast.error('Invalid email address');
       return;
     }
-
     if (selectedUsers.some((u) => u.email === trimmed)) {
       toast.error('User already added');
-      setEmail('');
       return;
     }
-
-    // Add as a "Guest" user object
-    setSelectedUsers([
-      ...selectedUsers,
-      { email: trimmed, name: trimmed.split('@')[0], type: 'email' },
-    ]);
+    // Add guest
+    const newUser = {
+      _id: `guest-${Date.now()}`,
+      email: trimmed,
+      name: trimmed.split('@')[0],
+      type: 'email',
+    };
+    setSelectedUsers([...selectedUsers, newUser]);
     setEmail('');
   };
 
-  const handleAddUser = (user) => {
-    if (selectedUsers.some((u) => u.email === user.email)) return;
-    setSelectedUsers([...selectedUsers, { ...user, type: 'user' }]);
-    setEmail(''); // Clear search
-    inputRef.current?.focus();
-  };
-
-  const removeUser = (emailToRemove) => {
-    setSelectedUsers(selectedUsers.filter((u) => u.email !== emailToRemove));
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleAddEmail();
+  const toggleUser = (user) => {
+    const exists = selectedUsers.find((u) => u.email === user.email);
+    if (exists) {
+      setSelectedUsers(selectedUsers.filter((u) => u.email !== user.email));
+    } else {
+      setSelectedUsers([...selectedUsers, { ...user, type: 'user' }]);
     }
   };
 
@@ -128,9 +115,7 @@ const SharePopup = ({ isOpen, onClose, fileId, BASE_URL }) => {
     if (selectedUsers.length === 0) return;
     setLoading(true);
 
-    console.log({ selectedUsers });
     try {
-      // Process all users
       const promises = selectedUsers.map((user) =>
         fetch(`${BASE_URL}/share/${user.email}`, {
           method: 'POST',
@@ -144,13 +129,7 @@ const SharePopup = ({ isOpen, onClose, fileId, BASE_URL }) => {
       );
 
       await Promise.all(promises);
-
-      toast.custom(
-        <div className="bg-emerald-600 text-white px-6 py-3 rounded-full shadow-xl flex items-center gap-3 font-medium animate-in slide-in-from-top-5">
-          <FiCheck size={18} /> Shared with {selectedUsers.length} people
-        </div>
-      );
-
+      toast.success(`Shared with ${selectedUsers.length} people`);
       onClose();
       setSelectedUsers([]);
       setRole('viewer');
@@ -162,15 +141,19 @@ const SharePopup = ({ isOpen, onClose, fileId, BASE_URL }) => {
     }
   };
 
-  // --- Render Helpers ---
-
-  // Is the search input showing results?
-  const showResults = email.length > 0 && (users.length > 0 || usersLoading);
+  // Determine what list to show:
+  // 1. If searching -> Show API results
+  // 2. If NOT searching -> Show Selected Users (Staging)
+  // 3. Merge them if needed, but for simplicity:
+  //    - If `email` has text, we show `users` (filtered by API).
+  //    - If `email` is empty, we show `selectedUsers`.
+  const isSearching = email.trim().length > 0;
+  const displayList = isSearching ? users : selectedUsers;
 
   return createPortal(
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 sm:p-6">
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-0 md:p-2 m-3">
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -180,226 +163,232 @@ const SharePopup = ({ isOpen, onClose, fileId, BASE_URL }) => {
             className="fixed inset-0 bg-slate-900/40 backdrop-blur-md transition-all"
           />
 
-          {/* Main Card */}
+          {/* Dialog Content */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 10 }}
-            transition={{ type: 'spring', duration: 0.5, bounce: 0.3 }}
-            className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden z-10 flex flex-col max-h-[85vh]"
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            className="
+              relative w-full md:w-[95vw] sm:max-w-[750px] 
+              h-[100vh] md:h-auto md:max-h-[85vh] 
+              bg-white md:rounded-2xl shadow-2xl overflow-hidden z-10 
+              flex flex-col
+            "
           >
-            {/* Header */}
-            <div className="p-6 pb-2 flex items-center justify-between">
-              <div>
-                <h2 className="text-xl font-bold text-slate-800">Share File</h2>
-                <p className="text-sm text-slate-500">
-                  Invite team members to collaborate
-                </p>
+            {/* ───────── HEADER ───────── */}
+            <div className="p-4 md:p-6 border-b bg-white shrink-0 flex items-center justify-between">
+              <div className="flex flex-row items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center border border-rose-100 shrink-0">
+                  <FiUsers size={20} />
+                </div>
+                <div className="min-w-0">
+                  <h2 className="text-lg md:text-xl font-semibold truncate text-slate-800">
+                    Share File
+                  </h2>
+                  <p className="text-xs md:text-sm text-slate-500 truncate">
+                    Invite users and set permissions
+                  </p>
+                </div>
               </div>
               <button
                 onClick={onClose}
-                className="p-2 bg-slate-50 hover:bg-slate-100 rounded-full text-slate-400 hover:text-slate-600 transition-colors"
+                className="p-2 bg-slate-100 rounded-full text-slate-500"
               >
                 <FiX size={20} />
               </button>
             </div>
 
-            {/* Content Area */}
-            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
-              {/* Input Section */}
-              <div className="relative z-20">
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-slate-400 group-focus-within:text-rose-500 transition-colors">
-                    {usersLoading ? (
-                      <div className="w-4 h-4 border-2 border-rose-500 border-t-transparent rounded-full animate-spin" />
-                    ) : (
-                      <FiSearch size={18} />
-                    )}
-                  </div>
+            {/* ───────── BODY (Responsive Flex) ───────── */}
+            <div className="flex flex-col md:flex-row flex-1 min-h-0 overflow-hidden">
+              {/* LEFT — Search & User List */}
+              <div className="w-full md:w-[65%] border-b md:border-b-0 md:border-r px-4 md:px-6 py-4 md:py-5 flex flex-col bg-white h-full relative">
+                {/* Search Input */}
+                <div className="relative mb-4 shrink-0">
+                  <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                   <input
                     ref={inputRef}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder="Search by name or email..."
-                    className="w-full pl-10 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all shadow-sm"
+                    onKeyDown={(e) =>
+                      e.key === 'Enter' ? handleAddEmail() : null
+                    }
+                    placeholder="Search users or type email..."
+                    className="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-3xl text-sm focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition-all"
                   />
-                  {email && (
+                </div>
+
+                {/* List Header */}
+                <div className="flex items-center justify-between mb-2 shrink-0">
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                    {isSearching
+                      ? 'Search Results'
+                      : `Selected (${selectedUsers.length})`}
+                  </span>
+                  {!isSearching && selectedUsers.length > 0 && (
                     <button
-                      onClick={() => setEmail('')}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600"
+                      onClick={() => setSelectedUsers([])}
+                      className="text-xs text-rose-500 flex items-center gap-1 hover:underline"
                     >
-                      <FiX size={14} />
+                      Clear all <FiX size={12} />
                     </button>
                   )}
                 </div>
 
-                {/* Dropdown Results (Absolute) */}
-                <AnimatePresence>
-                  {showResults && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl border border-slate-100 shadow-xl overflow-hidden max-h-60 overflow-y-auto z-50 divide-y divide-slate-50"
-                    >
-                      {users.map((user) => {
-                        const isSelected = selectedUsers.some(
-                          (u) => u.email === user.email
-                        );
-                        return (
-                          <button
-                            key={user._id}
-                            onClick={() => handleAddUser(user)}
-                            disabled={isSelected}
-                            className={`w-full flex items-center gap-3 p-3 text-left transition-colors ${
+                {/* Scrollable List */}
+                <div className="flex-1 overflow-y-auto pr-1 space-y-2 scrollbar-thin scrollbar-thumb-slate-200 scrollbar-track-transparent">
+                  {usersLoading && isSearching ? (
+                    <div className="flex flex-col items-center justify-center py-10 text-slate-400">
+                      <div className="w-6 h-6 border-2 border-rose-500 border-t-transparent rounded-full animate-spin mb-2" />
+                      <p className="text-sm">Finding users...</p>
+                    </div>
+                  ) : displayList.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-10 text-slate-400 opacity-80 text-center">
+                      {isSearching ? (
+                        <div
+                          onClick={handleAddEmail}
+                          className="cursor-pointer group"
+                        >
+                          <div className="w-12 h-12 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-2 group-hover:scale-110 transition-transform">
+                            <FiMail size={20} />
+                          </div>
+                          <p className="text-sm font-medium text-slate-600">
+                            Invite{' '}
+                            <span className="text-rose-600">{email}</span>
+                          </p>
+                          <p className="text-xs">Click to add via email</p>
+                        </div>
+                      ) : (
+                        <>
+                          <FiUsers size={32} className="mb-2 opacity-20" />
+                          <p className="text-sm">No users selected yet.</p>
+                          <p className="text-xs mt-1">
+                            Search above to add people.
+                          </p>
+                        </>
+                      )}
+                    </div>
+                  ) : (
+                    displayList.map((user) => {
+                      const isSelected = selectedUsers.some(
+                        (u) => u.email === user.email
+                      );
+                      return (
+                        <div
+                          key={user._id || user.email}
+                          onClick={() => toggleUser(user)}
+                          className={`
+                            flex items-center justify-between p-2 rounded-2xl border cursor-pointer transition-all select-none
+                            ${
                               isSelected
-                                ? 'opacity-50 cursor-not-allowed bg-slate-50'
-                                : 'hover:bg-rose-50'
-                            }`}
-                          >
-                            <Avatar
-                              src={user.picture}
-                              name={user.name}
-                              size="sm"
-                            />
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-semibold text-slate-700 truncate">
+                                ? 'bg-rose-50 border-rose-400'
+                                : 'border-transparent hover:bg-slate-50 hover:border-slate-200'
+                            }
+                          `}
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            {user.picture ? (
+                              <img
+                                src={user.picture}
+                                alt={user.name}
+                                className="w-9 h-9 md:w-10 md:h-10 rounded-full object-cover shrink-0 bg-slate-200"
+                              />
+                            ) : (
+                              <div className="w-9 h-9 md:w-10 md:h-10 rounded-full bg-gradient-to-br from-rose-100 to-rose-200 text-rose-600 flex items-center justify-center font-bold shrink-0 text-sm">
+                                {user.name.charAt(0).toUpperCase()}
+                              </div>
+                            )}
+
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold truncate text-slate-700">
                                 {user.name}
                               </p>
                               <p className="text-xs text-slate-500 truncate">
                                 {user.email}
                               </p>
                             </div>
-                            {isSelected && (
-                              <FiCheck className="text-rose-500" />
-                            )}
-                          </button>
-                        );
-                      })}
-                      {users.length === 0 && !usersLoading && (
-                        <div
-                          onClick={handleAddEmail}
-                          className="p-3 text-center cursor-pointer hover:bg-slate-50"
-                        >
-                          <p className="text-sm text-slate-600">
-                            Invite{' '}
-                            <span className="font-semibold text-rose-500">
-                              {email}
-                            </span>{' '}
-                            via email
-                          </p>
-                        </div>
-                      )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+                          </div>
 
-              {/* Staged Users List (Pending Invites) */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                    Pending Invites ({selectedUsers.length})
-                  </p>
-                  {selectedUsers.length > 0 && (
-                    <button
-                      onClick={() => setSelectedUsers([])}
-                      className="text-xs text-rose-500 font-medium hover:underline"
-                    >
-                      Clear all
-                    </button>
+                          {isSelected && (
+                            <div className="bg-rose-500 text-white p-1 rounded-full ml-2 shrink-0 shadow-sm animate-in zoom-in duration-200">
+                              <FiCheck size={12} strokeWidth={3} />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })
                   )}
                 </div>
+              </div>
 
-                <div className="space-y-2 min-h-[100px]">
-                  <AnimatePresence mode="popLayout">
-                    {selectedUsers.length === 0 ? (
-                      <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        className="flex flex-col items-center justify-center py-8 text-slate-400 bg-slate-50/50 rounded-xl border border-dashed border-slate-200"
-                      >
-                        <FiMail size={24} className="mb-2 opacity-20" />
-                        <p className="text-sm">
-                          Search or type emails to invite people
-                        </p>
-                      </motion.div>
-                    ) : (
-                      selectedUsers.map((user) => (
-                        <motion.div
-                          layout
-                          key={user.email}
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          exit={{ opacity: 0, scale: 0.9 }}
-                          className="group flex items-center justify-between p-2 rounded-xl border border-slate-100 bg-white shadow-sm hover:shadow-md hover:border-rose-100 transition-all"
-                        >
-                          <div className="flex items-center gap-3 overflow-hidden">
-                            <Avatar src={user.picture} name={user.name} />
-                            <div className="min-w-0">
-                              <p className="text-sm font-semibold text-slate-700 truncate">
-                                {user.name}
-                              </p>
-                              <p className="text-xs text-slate-400 truncate">
-                                {user.email}
-                              </p>
-                            </div>
-                          </div>
-                          <button
-                            onClick={() => removeUser(user.email)}
-                            className="p-2 text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
-                          >
-                            <FiTrash2 size={16} />
-                          </button>
-                        </motion.div>
-                      ))
-                    )}
-                  </AnimatePresence>
+              {/* RIGHT — Access Selection */}
+              <div className="w-full md:w-[35%] px-4 md:px-6 py-4 md:py-5 flex flex-col bg-slate-50/50 md:bg-white shrink-0">
+                <div className="space-y-3">
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                    Permission
+                  </span>
+
+                  <div className="grid grid-cols-2 md:grid-cols-1 gap-3">
+                    <AccessCard
+                      active={role === 'viewer'}
+                      icon={<FiEye size={18} />}
+                      title="Viewer"
+                      desc="Read-only access"
+                      onClick={() => setRole('viewer')}
+                    />
+
+                    <AccessCard
+                      active={role === 'editor'}
+                      icon={<FiEdit3 size={18} />}
+                      title="Editor"
+                      desc="Can edit file"
+                      onClick={() => setRole('editor')}
+                    />
+                  </div>
+
+                  {/* Mobile Summary (only visible on small screens to fill space) */}
+                  <div className="md:hidden mt-4 p-3 bg-white rounded-xl border border-slate-100">
+                    <p className="text-xs text-slate-500 text-center">
+                      Sharing with{' '}
+                      <strong className="text-rose-600">
+                        {selectedUsers.length}
+                      </strong>{' '}
+                      users
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Footer */}
-            <div className="p-6 pt-4 border-t border-slate-100 bg-slate-50/50 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="w-full sm:w-auto">
-                <RoleSelector
-                  value={role}
-                  onChange={setRole}
-                  disabled={loading}
-                />
-              </div>
-
-              <div className="flex gap-3 w-full sm:w-auto">
-                <button
-                  onClick={onClose}
-                  className="flex-1 sm:flex-none px-5 py-2.5 rounded-xl font-medium text-slate-500 hover:text-slate-700 hover:bg-white border border-transparent hover:border-slate-200 transition-all"
-                  disabled={loading}
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleShare}
-                  disabled={selectedUsers.length === 0 || loading}
-                  className={`
-                    flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-semibold text-white shadow-lg shadow-rose-500/30 transition-all
-                    ${
-                      selectedUsers.length === 0 || loading
-                        ? 'bg-slate-300 shadow-none cursor-not-allowed'
-                        : 'bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-400 hover:to-rose-500 active:scale-95'
-                    }
-                  `}
-                >
-                  {loading ? (
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      <span>Send</span>
-                      <FiSend size={16} />
-                    </>
-                  )}
-                </button>
-              </div>
+            {/* ───────── FOOTER ───────── */}
+            <div className="p-4 md:p-6 pt-4 bg-slate-50 border-t flex  sm:justify-between gap-3 shrink-0">
+              <button
+                onClick={onClose}
+                disabled={loading}
+                className="rounded-xl px-6 py-3 border border-slate-300 text-slate-600 font-semibold hover:bg-white transition-colors w-full sm:w-auto"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleShare}
+                disabled={selectedUsers.length === 0 || loading}
+                className={`
+                  rounded-xl px-6 py-3 font-bold text-white flex items-center justify-center gap-2 shadow-lg shadow-rose-500/20 transition-all w-full sm:w-auto
+                  ${
+                    selectedUsers.length === 0 || loading
+                      ? 'bg-slate-300 shadow-none cursor-not-allowed'
+                      : 'bg-rose-600 hover:bg-rose-700 active:scale-95'
+                  }
+                `}
+              >
+                {loading ? (
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <FiShare2 size={18} />
+                    <span>Share File</span>
+                  </>
+                )}
+              </button>
             </div>
           </motion.div>
         </div>

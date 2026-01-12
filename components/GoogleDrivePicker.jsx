@@ -227,8 +227,10 @@ const GoogleDrivePicker = () => {
             : 'bg-gray-100 border-gray-200 cursor-not-allowed opacity-60'
         }`}
     >
-      <FaGoogleDrive size={18} className="text-green-500" />
-      <span className="text-sm font-medium">Import from Drive</span>
+      <FaGoogleDrive size={20} className="text-green-500" />
+      <span className="hidden lg:inline text-[7px] lg:text-sm font-medium">
+        Import from Drive
+      </span>
     </button>
   );
 };

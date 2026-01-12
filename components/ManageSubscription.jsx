@@ -941,7 +941,7 @@ const ManageSubscription = () => {
           </div>
 
           {/* Footer Links */}
-          <div className="mt-12 flex items-center justify-center gap-6 text-sm text-slate-400 font-medium">
+          <div className="mt-12 flex items-center justify-center gap-6 text-xs lg:text-sm text-slate-400 font-medium">
             <span className="flex items-center gap-1">
               <ShieldCheck className="w-4 h-4" /> Secure Payment
             </span>

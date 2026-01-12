@@ -30,7 +30,7 @@ const StarredPage = () => {
       {directories.length > 0 && (
         <>
           <h3 className="font-medium mb-3">Starred Folders</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mb-10">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 md:grid-cols-4 gap-4 mb-10">
             {directories.map((dir) => (
               <DirCard
                 key={dir._id}

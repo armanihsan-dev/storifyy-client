@@ -45,6 +45,7 @@ const AppLayout = ({ children }) => {
 
     return debounced;
   }
+  const { pathname } = useLocation();
 
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search);
@@ -62,13 +63,6 @@ const AppLayout = ({ children }) => {
   const [folderName, setFolderName] = useState('');
 
   /* -------------------- LOADING -------------------- */
-
-  /* -------------------- REDIRECT (SIDE EFFECT) -------------------- */
-  useEffect(() => {
-    if (!isPending && (isError || !currentUser)) {
-      navigate('/login', { replace: true });
-    }
-  }, [isPending, isError, currentUser, navigate]);
 
   if (isPending) {
     return <FullPageLoader />;
@@ -101,6 +95,9 @@ const AppLayout = ({ children }) => {
               ? 'text-rose-500 bg-rose-50 border-r-4 border-rose-500'
               : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
           }`}
+          onClick={() => {
+            setMobileMenuOpen(false);
+          }}
         >
           <Icon className="w-5 h-5" />
           <span className="font-medium text-sm">{label}</span>
@@ -141,54 +138,62 @@ const AppLayout = ({ children }) => {
 
       {/* ---------------- SIDEBAR ---------------- */}
       <aside
-        className={`fixed inset-y-0 left-0 z-40 w-64 bg-white flex flex-col border-r transition-transform lg:static lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 w-64 bg-white flex flex-col justify-between border-r transition-transform lg:static lg:translate-x-0 ${
           mobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div
-          className="h-24 flex items-center px-8 gap-2 cursor-pointer"
-          onClick={() => navigate('/')}
-        >
-          <img src="/logo.svg" className="w-8" />
-          <span className="text-2xl font-bold text-pink-400">Storifyy</span>
-        </div>
+        <div>
+          <div
+            className="h-24 flex items-center px-8 gap-2 cursor-pointer"
+            onClick={() => navigate('/')}
+          >
+            <img src="/logo.svg" className="w-14" />
+            <span className="text-2xl font-bold text-pink-400">Storifyy</span>
+          </div>
 
-        <nav className="flex flex-col gap-1 py-4">
-          <SidebarItem
-            icon={FiGrid}
-            label="Dashboard"
-            to="/"
-            section="dashboard"
-          />
-
-          {currentUser.role === 'Admin' && (
+          <nav className="flex flex-col gap-1 py-4">
             <SidebarItem
-              icon={FiUsers}
-              label="Application Users"
-              to="/users"
-              section="users"
+              icon={FiGrid}
+              label="Dashboard"
+              to="/"
+              section="dashboard"
             />
-          )}
 
-          <SidebarItem
-            icon={BsInbox}
-            label="Inbox"
-            to="/inbox"
-            section="inbox"
-          />
-          <SidebarItem
-            icon={FiShare2}
-            label="Shared"
-            to="/shared"
-            section="shared"
-          />
-          <SidebarItem
-            icon={FiStar}
-            label="Starred"
-            to="/starred"
-            section="starred"
-          />
-        </nav>
+            {currentUser.role === 'Admin' ||
+              (currentUser.role === 'Owner' && (
+                <SidebarItem
+                  icon={FiUsers}
+                  label="Application Users"
+                  to="/users"
+                  section="users"
+                />
+              ))}
+
+            <SidebarItem
+              icon={BsInbox}
+              label="Inbox"
+              to="/inbox"
+              section="inbox"
+            />
+            <SidebarItem
+              icon={FiShare2}
+              label="Shared"
+              to="/shared"
+              section="shared"
+            />
+            <SidebarItem
+              icon={FiStar}
+              label="Starred"
+              to="/starred"
+              section="starred"
+            />
+          </nav>
+        </div>
+        <img
+          src="../public/Illustration.png"
+          className="w-32 self-center mb-12"
+          alt=""
+        />
       </aside>
 
       {/* ---------------- MAIN ---------------- */}
@@ -202,25 +207,31 @@ const AppLayout = ({ children }) => {
               <FiMenu className="w-6 h-6" />
             </button>
 
-            <div className="hidden md:flex bg-white px-5 py-3 rounded-3xl w-[400px]">
-              <FiSearch className="mr-3" />
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search files..."
-                className="w-full outline-none bg-transparent"
-              />
-            </div>
+            {pathname === '/' && (
+              <div className="hidden md:flex bg-white px-5 py-3 rounded-3xl items-center w-[400px]">
+                <FiSearch className="mr-3" />
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder="Search files..."
+                  className="w-full outline-none bg-transparent"
+                />
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-4">
-            <GoogleDrivePicker />
-            <FileUpload setShouldRefresh={setShouldRefresh} />
-            <CreateDirectory
-              folderName={folderName}
-              setfolderName={setFolderName}
-              handleCreateDirectory={handleCreateDirectory}
-            />
+            {pathname === '/' && (
+              <>
+                <GoogleDrivePicker />
+                <FileUpload setShouldRefresh={setShouldRefresh} />
+                <CreateDirectory
+                  folderName={folderName}
+                  setfolderName={setFolderName}
+                  handleCreateDirectory={handleCreateDirectory}
+                />
+              </>
+            )}
             <AuthDropDown BASEURL={BASE_URL} />
           </div>
         </header>
