@@ -1,4 +1,4 @@
-#Modern Distributed Cloud Storage : Storifyy
+## Modern Distributed Cloud Storage : Storifyy
 
 Storifyy is a full-stack cloud storage platform designed for secure file management and seamless sharing.
 It features a subscription-based storage system with Lemon squeezy integration, allowing users to upgrade plans effortlessly.
@@ -10,21 +10,9 @@ Built with React, Vite, and Tailwind CSS on the client, and Node.js, Express, Mo
 ## 🚀 Quick Overview
 
 - **Purpose:** Store, share, and manage digital assets with enterprise-grade features and a delightful UX.
-- **Highlights:** Secure auth (OTP & OAuth), background jobs, Google Drive imports, CDN delivery, and subscription billing.
+- **Highlights:** Secure auth (OTP & OAuth), background jobs, Google Drive imports, and subscription billing.
 
 ---
-
-## 📋 Table of Contents
-
-1. [Key Features](#-key-features)
-2. [Architecture & Tech Stack](#-architecture--tech-stack)
-3. [Project Structure](#-project-structure)
-4. [Screenshots](#-screenshots)
-5. [Getting Started](#-getting-started)
-6. [Contributing](#-contributing)
-
----
-
 # Features
 
 ## Authentication and Security
