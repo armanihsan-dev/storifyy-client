@@ -137,26 +137,55 @@ Built with React, Vite, and Tailwind CSS on the client, and Node.js, Express, Mo
 
 ## 🖼️ Screenshots
 
-Login & Register
-![](./github/images/login.png) ![](./github/images/register.png) ![](./github/images/otp.png)
+![](./github/images/login.png)
+![](./github/images/register.png)
+![](./github/images/otp.png)
 
 Home
-![](./github/images/home.png) ![](./github/images/home2.png) ![](./github/images/home3.png) ![](./github/images/home4.png)
+![](./github/images/home.png)
+![](./github/images/home2.png)
+![](./github/images/home3.png)
+![](./github/images/home4.png)
 
 Profile
-![](./github/images/profile1.png) ![](./github/images/profile2.png) ![](./github/images/profile3.png)
+![](./github/images/profile1.png)
+![](./github/images/profile2.png)
+![](./github/images/profile3.png)
+![](./github/images/profile4.png)
+![](./github/images/profile5.png)
+![](./github/images/profile6.png)
+![](./github/images/profile7.png)
+![](./github/images/profile9.png)
+![](./github/images/profile8.png)
 
 Share
-![](./github/images/share1.png) ![](./github/images/share2.png)
+![](./github/images/share1.png)
+![](./github/images/share2.png)
+![](./github/images/share3.png)
+![](./github/images/share4.png)
+![](./github/images/share5.png)
+![](./github/images/share6.png)
 
 Admin Dashboard
-![](./github/images/admin1.png) ![](./github/images/admin2.png)
+![](./github/images/admin1.png)
+![](./github/images/admin2.png)
+![](./github/images/admin3.png)
+![](./github/images/admin4.png)
 
-Import (Google Drive)
+Import from google drive
 ![](./github/images/gdrive1.png)
 
-Plans & Subscriptions
+Plans & Subscription management
 ![](./github/images/plan1.png)
+![](./github/images/plan2.png)
+![](./github/images/plan3.png)
+![](./github/images/plan4.png)
+![](./github/images/plan5.png)
+![](./github/images/plan6.png)
+![](./github/images/plan7.png)
+![](./github/images/plan8.png)
+![](./github/images/plan9.png)
+![](./github/images/plan10.png)
 
 ---
 
@@ -181,8 +210,8 @@ Make sure you have the following installed and configured:
 ### 📦 Clone the Repository
 
 ```bash
-git clone https://github.com/KunalKhandekar/Storage-App.git
-cd Storage-App
+git clone https://github.com/armanihsan-dev/storifyy-client.git
+cd client
 ```
 
 ### 🔐 Environment Setup
