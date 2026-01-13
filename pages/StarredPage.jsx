@@ -16,7 +16,36 @@ const StarredPage = () => {
   // ⭐ Static breadcrumb for starred items
   const breadcrumbPath = 'Home / Starred';
 
-  if (isLoading) return <div className="p-6">Loading...</div>;
+  if (isLoading) {
+    return (
+      <div className="p-6">
+        {/* Header skeleton */}
+        <div className="h-5 w-40 bg-slate-200 rounded-md animate-pulse mb-6" />
+
+        {/* Grid skeleton */}
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div
+              key={i}
+              className="relative overflow-hidden rounded-xl bg-white p-4 shadow-sm border border-slate-200"
+            >
+              {/* Shimmer overlay */}
+              <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-slate-100 to-transparent animate-[shimmer_1.4s_infinite]" />
+
+              {/* Icon placeholder */}
+              <div className="h-10 w-10 rounded-lg bg-slate-200 mb-4" />
+
+              {/* Text lines */}
+              <div className="space-y-2">
+                <div className="h-4 w-3/4 bg-slate-200 rounded" />
+                <div className="h-3 w-1/2 bg-slate-100 rounded" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   const directories = data?.directories ?? [];
 

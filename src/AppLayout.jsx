@@ -29,10 +29,11 @@ import GoogleDrivePicker from '../components/GoogleDrivePicker';
 import { AccountHibernation } from '../components/DisabledAccount';
 import FullPageLoader from '../components/FullPageLoader';
 
-const AppLayout = ({ children }) => {
+const AppLayout = () => {
   const BASE_URL = 'http://localhost:3000';
   const navigate = useNavigate();
   const { dirId } = useParams();
+  const { pathname } = useLocation();
 
   /* -------------------- DEBOUNCE -------------------- */
   function useDebounce(value, delay = 400) {
@@ -45,7 +46,6 @@ const AppLayout = ({ children }) => {
 
     return debounced;
   }
-  const { pathname } = useLocation();
 
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search);
@@ -62,8 +62,14 @@ const AppLayout = ({ children }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [folderName, setFolderName] = useState('');
 
-  /* -------------------- LOADING -------------------- */
+  /* -------------------- AUTH REDIRECT -------------------- */
+  useEffect(() => {
+    if (!isPending && (isError || !currentUser)) {
+      navigate('/login', { replace: true });
+    }
+  }, [isPending, isError, currentUser, navigate]);
 
+  /* -------------------- LOADING -------------------- */
   if (isPending) {
     return <FullPageLoader />;
   }
@@ -88,16 +94,13 @@ const AppLayout = ({ children }) => {
     const active = currentSection === section;
 
     return (
-      <Link to={to}>
+      <Link to={to} onClick={() => setMobileMenuOpen(false)}>
         <div
           className={`flex items-center gap-4 px-6 py-4 transition-all ${
             active
               ? 'text-rose-500 bg-rose-50 border-r-4 border-rose-500'
               : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
           }`}
-          onClick={() => {
-            setMobileMenuOpen(false);
-          }}
         >
           <Icon className="w-5 h-5" />
           <span className="font-medium text-sm">{label}</span>
@@ -113,9 +116,7 @@ const AppLayout = ({ children }) => {
     const response = await fetch(`${BASE_URL}/directory/${dirId || ''}`, {
       method: 'POST',
       credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ folderName }),
     });
 
@@ -159,15 +160,14 @@ const AppLayout = ({ children }) => {
               section="dashboard"
             />
 
-            {currentUser.role === 'Admin' ||
-              (currentUser.role === 'Owner' && (
-                <SidebarItem
-                  icon={FiUsers}
-                  label="Application Users"
-                  to="/users"
-                  section="users"
-                />
-              ))}
+            {(currentUser.role === 'Admin' || currentUser.role === 'Owner') && (
+              <SidebarItem
+                icon={FiUsers}
+                label="Application Users"
+                to="/users"
+                section="users"
+              />
+            )}
 
             <SidebarItem
               icon={BsInbox}
@@ -189,8 +189,9 @@ const AppLayout = ({ children }) => {
             />
           </nav>
         </div>
+
         <img
-          src="../public/Illustration.png"
+          src="/Illustration.png"
           className="w-32 self-center mb-12"
           alt=""
         />
@@ -237,17 +238,15 @@ const AppLayout = ({ children }) => {
         </header>
 
         <main className="flex-1 overflow-y-auto">
-          {children || (
-            <Outlet
-              context={{
-                shouldRefresh,
-                setShouldRefresh,
-                searchQuery: debouncedSearch,
-                searchResult,
-                isSearching: !!debouncedSearch,
-              }}
-            />
-          )}
+          <Outlet
+            context={{
+              shouldRefresh,
+              setShouldRefresh,
+              searchQuery: debouncedSearch,
+              searchResult,
+              isSearching: !!debouncedSearch,
+            }}
+          />
         </main>
       </div>
     </div>
