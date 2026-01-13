@@ -7,7 +7,7 @@ import { HashLoader } from 'react-spinners';
 import axiosAPI from '../API/axsios';
 
 const RegisterForm = () => {
-  const BASE_URL = 'http://localhost:3000';
+  const BASE_URL = 'https://storifyy-backend.onrender.com';
   const [isRegistered, setisRegistered] = useState(true);
   const [otpLoading, setOtpLoading] = useState(false);
   const [showOtpBox, setShowOtpBox] = useState(false);

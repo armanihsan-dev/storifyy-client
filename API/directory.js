@@ -1,4 +1,4 @@
-const BASE_URL = "http://localhost:3000";
+const BASE_URL = "https://storifyy-backend.onrender.com";
 export const fetchDirectory = async (dirId) => {
 
     const response = await fetch(

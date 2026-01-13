@@ -8,7 +8,7 @@ import { formatFileSize } from '../utility/functions';
 import { useToggleStar } from './../src/hooks/otherHooks';
 
 const DirCard = ({ id, name, onOpen, refetch, details, isStarred }) => {
-  const BASE_URL = 'http://localhost:3000';
+  const BASE_URL = 'https://storifyy-backend.onrender.com';
   const [openRename, setOpenRename] = useState(false);
   const { createdAt, updatedAt, size } = details;
   const { mutate: toggleStar } = useToggleStar();

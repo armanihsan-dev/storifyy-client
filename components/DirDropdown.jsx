@@ -59,7 +59,7 @@ const DirDropdown = ({ id, onDelete, onRename, details }) => {
 
   const [email, setEmail] = useState('');
   const [accessType, setAccessType] = useState('viewer');
-  const BASE_URL = 'http://localhost:3000';
+  const BASE_URL = 'https://storifyy-backend.onrender.com';
 
   const { data, error, isPending } = useDirectoryContent(id);
   const itemClass =

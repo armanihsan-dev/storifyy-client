@@ -6,7 +6,7 @@ import { HashLoader } from 'react-spinners';
 import { loginWithGoogle } from '../API/LoginWithGoogle';
 
 const Login = () => {
-  const BASE_URL = 'http://localhost:3000';
+  const BASE_URL = 'https://storifyy-backend.onrender.com';
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',

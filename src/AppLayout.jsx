@@ -30,7 +30,7 @@ import { AccountHibernation } from '../components/DisabledAccount';
 import FullPageLoader from '../components/FullPageLoader';
 
 const AppLayout = () => {
-  const BASE_URL = 'http://localhost:3000';
+  const BASE_URL = 'https://storifyy-backend.onrender.com';
   const navigate = useNavigate();
   const { dirId } = useParams();
   const { pathname } = useLocation();
