@@ -20,7 +20,6 @@ import { truncateText } from '../../pages/SharedDirectoriesList';
 
 const SharedDirectoryCard = ({ directory, onDelete }) => {
   const navigate = useNavigate();
-  console.log(directory);
 
   // State for Delete
   const [confirmOpen, setConfirmOpen] = useState(false);
