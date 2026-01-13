@@ -141,13 +141,13 @@ Built with React, Vite, and Tailwind CSS on the client, and Node.js, Express, Mo
 ![](./github/images/register.png)
 ![](./github/images/otp.png)
 
-Home
+## Home
 ![](./github/images/home.png)
 ![](./github/images/home2.png)
 ![](./github/images/home3.png)
 ![](./github/images/home4.png)
 
-Profile
+## Profile
 ![](./github/images/profile1.png)
 ![](./github/images/profile2.png)
 ![](./github/images/profile3.png)
@@ -158,7 +158,7 @@ Profile
 ![](./github/images/profile9.png)
 ![](./github/images/profile8.png)
 
-Share
+## Share
 ![](./github/images/share1.png)
 ![](./github/images/share2.png)
 ![](./github/images/share3.png)
@@ -166,16 +166,16 @@ Share
 ![](./github/images/share5.png)
 ![](./github/images/share6.png)
 
-Admin Dashboard
+## Admin Dashboard
 ![](./github/images/admin1.png)
 ![](./github/images/admin2.png)
 ![](./github/images/admin3.png)
 ![](./github/images/admin4.png)
 
-Import from google drive
+## Import from google drive
 ![](./github/images/gdrive1.png)
 
-Plans & Subscription management
+## Plans & Subscription management
 ![](./github/images/plan1.png)
 ![](./github/images/plan2.png)
 ![](./github/images/plan3.png)
@@ -191,7 +191,7 @@ Plans & Subscription management
 
 ## 🛠️ Getting Started
 
-Follow these steps to set up **VaultStream** locally on your machine.
+Follow these steps to set up **storifyy** locally on your machine.
 
 ---
 
