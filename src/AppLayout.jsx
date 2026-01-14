@@ -63,11 +63,11 @@ const AppLayout = () => {
   const [folderName, setFolderName] = useState('');
 
   /* -------------------- AUTH REDIRECT -------------------- */
-  useEffect(() => {
-    if (!isPending && (isError || !currentUser)) {
-      navigate('/login', { replace: true });
-    }
-  }, [isPending, isError, currentUser, navigate]);
+  // useEffect(() => {
+  //   if (!isPending && (isError || !currentUser)) {
+  //     navigate('/login', { replace: true });
+  //   }
+  // }, [isPending, isError, currentUser, navigate]);
 
   /* -------------------- LOADING -------------------- */
   if (isPending) {
