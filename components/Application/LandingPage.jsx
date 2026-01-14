@@ -153,7 +153,11 @@ const LandingPage = () => {
             onClick={() => window.scrollTo(0, 0)}
           >
             <div className="w-8 h-8  flex items-center justify-center ">
-              <img src="/public/logo.svg" alt="logo" className="w-14" />
+              <img
+                src="https://res.cloudinary.com/dzezofvz3/image/upload/v1768412064/logo.png"
+                alt="logo"
+                className="w-14"
+              />
             </div>
             <span className="text-pink-400">storifyy</span>
           </div>
@@ -435,7 +439,11 @@ const LandingPage = () => {
             <div className="col-span-2 lg:col-span-2">
               <div className="flex items-center gap-2 font-extrabold text-slate-900 text-xl mb-4">
                 <div className="w-8 h-8  rounded-lg flex items-center justify-center text-white">
-                  <img src="/public/logo.svg" alt="logo" className="w-14" />
+                  <img
+                    src="https://res.cloudinary.com/dzezofvz3/image/upload/v1768412064/logo.png"
+                    alt="logo"
+                    className="w-14"
+                  />
                 </div>
                 <span className="text-pink-400">storifyy</span>
               </div>

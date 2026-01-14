@@ -198,11 +198,9 @@ const HeroSectionBento = () => {
             {/* UI Body */}
             <div className="flex-1 bg-slate-50/50">
               <img
-                src="../../github/images/home.png"
-                className="w-full h-full"
+                src="https://res.cloudinary.com/dzezofvz3/image/upload/v1768412298/Screenshot_2026-01-11_151236.png"
+                alt=""
               />
-              {/* Fade Overlay */}
-              {/* <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-white via-white/80 to-transparent pointer-events-none"></div> */}
             </div>
           </div>
         </div>
