@@ -28,25 +28,33 @@ const Login = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    const response = await fetch(`${BASE_URL}/user/login`, {
-      method: 'POST',
-      body: JSON.stringify(formData),
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    try {
+      const response = await fetch(`${BASE_URL}/user/login`, {
+        method: 'POST',
+        body: JSON.stringify(formData),
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
 
-    const data = await response.json();
-    console.log(data);
-    if (data.error) {
-      toast.error(data.error);
+      const data = await response.json();
+      console.log(data);
+
+      if (data.error) {
+        toast.error(data.error);
+        setIsLoading(false);
+      } else {
+        toast.success(data.message || 'Login successful!');
+        // UPDATED: Redirect to /app instead of /
+        setTimeout(() => {
+          navigate('/app');
+        }, 2000);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error('Something went wrong. Please try again.');
       setIsLoading(false);
-    } else {
-      toast.success(data.message || 'Login successful!');
-      setTimeout(() => {
-        navigate('/'); // go to dashboard/home
-      }, 2000);
     }
   };
 
@@ -129,11 +137,21 @@ const Login = () => {
               size="large"
               onSuccess={async (credentialResponse) => {
                 const idToken = credentialResponse.credential;
-                await loginWithGoogle(idToken);
-                navigate('/');
+                try {
+                  await loginWithGoogle(idToken);
+                  toast.success('Login successful!');
+                  // UPDATED: Redirect to /app instead of /
+                  setTimeout(() => {
+                    navigate('/app');
+                  }, 1000);
+                } catch (error) {
+                  toast.error('Google login failed');
+                  console.error(error);
+                }
               }}
               onError={() => {
                 console.log('Login Failed');
+                toast.error('Google login failed');
               }}
               useOneTap
             />
