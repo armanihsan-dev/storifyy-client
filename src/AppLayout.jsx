@@ -175,12 +175,14 @@ const AppLayout = () => {
               to="/inbox"
               section="inbox"
             />
+
             <SidebarItem
               icon={FiShare2}
               label="Shared"
               to="/shared"
               section="shared"
             />
+
             <SidebarItem
               icon={FiStar}
               label="Starred"
