@@ -142,7 +142,7 @@ const Login = () => {
                   toast.success('Login successful!');
                   // UPDATED: Redirect to /app instead of /
                   setTimeout(() => {
-                    navigate('/app');
+                    navigate('/');
                   }, 1000);
                 } catch (error) {
                   toast.error('Google login failed');
