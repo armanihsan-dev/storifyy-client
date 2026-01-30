@@ -438,17 +438,7 @@ const Plans = () => {
                         // handleSubmit(plan.lsId, isFreePlan);
 
                         //for now shows a toast
-                        toast.success('Service will be available soon.', {
-                          style: {
-                            background: '#FEF9C3', // soft yellow
-                            color: '#92400E', // amber text
-                            border: '1px solid #FDE047',
-                          },
-                          iconTheme: {
-                            primary: '#FACC15', // yellow icon
-                            secondary: '#92400E',
-                          },
-                        });
+                        toast.success('Service will be available soon.');
                       }}
                       disabled={isCurrentPlan || loadingPlanId === plan.lsId}
                       className={`w-full py-4 rounded-xl font-bold text-sm transition-all duration-300 flex items-center justify-center gap-2
