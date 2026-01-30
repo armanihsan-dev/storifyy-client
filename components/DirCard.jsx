@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import DirDropdown from './DirDropdown';
 import RenameDialog from './RenameDialog';
 import { FiFolder, FiStar } from 'react-icons/fi';
@@ -10,6 +10,8 @@ import { useToggleStar } from './../src/hooks/otherHooks';
 const DirCard = ({ id, name, onOpen, refetch, details, isStarred }) => {
   const BASE_URL = 'https://storifyy-backend.onrender.com';
   const [openRename, setOpenRename] = useState(false);
+  const [optimisticStar, setOptimisticStar] = useState(isStarred);
+
   const { createdAt, updatedAt, size } = details;
   const { mutate: toggleStar } = useToggleStar();
   // DELETE
@@ -24,6 +26,9 @@ const DirCard = ({ id, name, onOpen, refetch, details, isStarred }) => {
       console.error('Failed to delete directory', error);
     }
   }
+  useEffect(() => {
+    setOptimisticStar(isStarred);
+  }, [isStarred]);
 
   // SAVE (rename)
   async function saveDirName(newName) {
@@ -48,12 +53,28 @@ const DirCard = ({ id, name, onOpen, refetch, details, isStarred }) => {
         onDoubleClick={() => onOpen(id)}
       >
         <FiStar
-          className={`absolute top-4 right-4 cursor-pointer ${
-            isStarred ? 'text-pink-400 fill-pink-400' : 'text-gray-400'
-          }`}
-          onClick={() => toggleStar(id)}
+          className={`
+             absolute top-4 right-4 cursor-pointer
+             transition-transform duration-150
+            ${optimisticStar ? 'scale-110 text-pink-400 fill-pink-400' : 'scale-100 text-gray-400'}
+          `}
           size={18}
+          onClick={(e) => {
+            e.stopPropagation();
+
+            // 1️⃣ optimistic update
+            setOptimisticStar((prev) => !prev);
+
+            // 2️⃣ fire API in background
+            toggleStar(id, {
+              onError: () => {
+                // 3️⃣ rollback if API fails
+                setOptimisticStar(isStarred);
+              },
+            });
+          }}
         />
+
         {/* Left Side */}
         <div className="flex flex-col gap-3 overflow-hidden min-w-0 relative">
           {/* Icon + Name + Size */}

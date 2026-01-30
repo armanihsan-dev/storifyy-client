@@ -64,12 +64,47 @@ export const useToggleStar = () => {
             return data;
         },
 
-        onSuccess: (_, dirId) => {
-            queryClient.invalidateQueries(["directoryList"]);
-            queryClient.invalidateQueries(["breadcrumb", dirId]);
-        }
+        // 🔥 OPTIMISTIC UPDATE
+        onMutate: async (dirId) => {
+            // 1️⃣ Stop outgoing refetches
+            await queryClient.cancelQueries(['directoryList']);
+
+            // 2️⃣ Snapshot previous value
+            const previousDirs = queryClient.getQueryData(['directoryList']);
+
+            // 3️⃣ Optimistically update cache
+            queryClient.setQueryData(['directoryList'], (old) => {
+                if (!old) return old;
+
+                return old.map((dir) =>
+                    dir.id === dirId
+                        ? { ...dir, isStarred: !dir.isStarred }
+                        : dir
+                );
+            });
+
+            // 4️⃣ Return context for rollback
+            return { previousDirs };
+        },
+
+        // ❌ Rollback on error
+        onError: (_err, _dirId, context) => {
+            if (context?.previousDirs) {
+                queryClient.setQueryData(
+                    ['directoryList'],
+                    context.previousDirs
+                );
+            }
+        },
+
+        // 🔄 Sync with server
+        onSettled: (_data, _error, dirId) => {
+            queryClient.invalidateQueries(['directoryList']);
+            queryClient.invalidateQueries(['breadcrumb', dirId]);
+        },
     });
 };
+
 
 export const useStarred = () =>
     useQuery({
