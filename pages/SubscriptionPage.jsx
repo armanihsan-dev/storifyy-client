@@ -15,7 +15,6 @@ import { useMySubscription } from '@/hooks/otherHooks';
 import { BASE_URL } from '../utility/Server';
 import AuthDropDown from '../components/AuthDropDown';
 
-
 // --- DATA CONSTANTS (Same as before) ---
 export const monthlyPlans = [
   {
@@ -434,15 +433,31 @@ const Plans = () => {
                     </ul>
 
                     <button
-                      onClick={() => handleSubmit(plan.lsId, isFreePlan)}
+                      onClick={() => {
+                        //uncomment this once get the reak Bank account
+                        // handleSubmit(plan.lsId, isFreePlan);
+
+                        //for now shows a toast
+                        toast.success('Service will be available soon.', {
+                          style: {
+                            background: '#FEF9C3', // soft yellow
+                            color: '#92400E', // amber text
+                            border: '1px solid #FDE047',
+                          },
+                          iconTheme: {
+                            primary: '#FACC15', // yellow icon
+                            secondary: '#92400E',
+                          },
+                        });
+                      }}
                       disabled={isCurrentPlan || loadingPlanId === plan.lsId}
                       className={`w-full py-4 rounded-xl font-bold text-sm transition-all duration-300 flex items-center justify-center gap-2
                       ${
                         isCurrentPlan
                           ? 'bg-slate-100 text-slate-400 cursor-default border border-slate-200'
                           : isPopular
-                          ? 'bg-gradient-to-r from-pink-400 to-pink-500 text-white hover:shadow-lg hover:shadow-pink-500/30 hover:-translate-y-0.5'
-                          : 'bg-slate-900 text-white hover:bg-slate-800 hover:shadow-lg hover:-translate-y-0.5'
+                            ? 'bg-gradient-to-r from-pink-400 to-pink-500 text-white hover:shadow-lg hover:shadow-pink-500/30 hover:-translate-y-0.5'
+                            : 'bg-slate-900 text-white hover:bg-slate-800 hover:shadow-lg hover:-translate-y-0.5'
                       }
                     `}
                     >

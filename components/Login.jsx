@@ -139,7 +139,6 @@ const Login = () => {
                 const idToken = credentialResponse.credential;
                 try {
                   await loginWithGoogle(idToken);
-                  toast.success('Login successful!');
                   // UPDATED: Redirect to /app instead of /
                   setTimeout(() => {
                     navigate('/');
