@@ -10,7 +10,7 @@ import {
 import { createSubscriptionCheckout } from '../API/lemonSqueezy';
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
-import toast from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
 import { useMySubscription } from '@/hooks/otherHooks';
 import { BASE_URL } from '../utility/Server';
 import AuthDropDown from '../components/AuthDropDown';
@@ -205,7 +205,9 @@ const Plans = () => {
 
   return (
     <>
+      <Toaster position="top-center" />
       <Header />
+
       <div className="relative min-h-screen bg-slate-50 font-[Poppins] py-24 px-4 sm:px-6 lg:px-8 overflow-x-hidden">
         {/* Background Decorations */}
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
@@ -436,7 +438,7 @@ const Plans = () => {
                       onClick={() => {
                         //uncomment this once get the reak Bank account
                         // handleSubmit(plan.lsId, isFreePlan);
-
+                        console.log('clicking sub button upgrade now');
                         //for now shows a toast
                         toast.success('Service will be available soon.');
                       }}
