@@ -48,8 +48,8 @@ const Login = () => {
         toast.success(data.message || 'Login successful!');
         // UPDATED: Redirect to /app instead of /
         setTimeout(() => {
-          navigate('/app');
-        }, 2000);
+          navigate('/');
+        }, 1000);
       }
     } catch (error) {
       console.error(error);
